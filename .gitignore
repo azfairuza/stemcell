@@ -1,0 +1,9 @@
+#ignore All .log files
+*.log
+
+#ignore All files in Any directory named temp
+temp/
+
+#ignore the env folder
+**/stem_cell/
+**/.spyproject/
