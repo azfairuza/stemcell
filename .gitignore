@@ -7,3 +7,10 @@ temp/
 #ignore the env folder
 **/stem_cell/
 **/.spyproject/
+
+#ignore pycache
+__pycache__
+*.pyc
+
+#ignore main.py for now
+main.py
