@@ -13,6 +13,11 @@ class Ligand():
         self.status = False
         #False status mean that ligand is not connected with any integrin
 
+class Nanopattern():
+
+    def __init__(self, height, width, grid_height, grid_width, position_list):
+        self.ligand
+
 
 class Integrin():
     
@@ -22,6 +27,8 @@ class Integrin():
         self.theta = theta
         self.integrin_id = integrin_id
         self.status = False
+        self.x_target = 0
+        self.y_target = 0
     
     def getInformation(self):
         print(''.join(("integrin ", str(self.cell_id),".", 
@@ -44,6 +51,12 @@ class Integrin():
         x_distance = self_x_position - target_x_position
         y_distance = self_y_position - target_y_position
         return(sqrt(x_distance**2 + y_distance**2))
+
+    def searchNearestLigand(self, list_of_ligands, range):
+        
+        for ligand in list_of_ligands:
+
+
 
 class Cell():
     cell_number = 0
