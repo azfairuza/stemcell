@@ -14,3 +14,6 @@ __pycache__
 
 #ignore main.py for now
 main.py
+
+#ignore flowchart folder
+flowchart/
