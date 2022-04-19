@@ -2,6 +2,7 @@
 #email: fairuza.zacky1@gmail.com
 
 from cmath import sqrt
+from encodings import utf_8
 from random import uniform
 import numpy as np
 
@@ -82,7 +83,7 @@ class Integrin():
     def getInformation(self):
         if self.bound_status == True:
             if self.object_type == 1:
-                return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", " status: bound to ligand ", str(self.ligand_target_id), " at (", str(self.x_target), ",", str(self.y_target), ")")))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', ' status: bound to ligand ', str(self.ligand_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
             elif self.object_type == 2:
                 return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", " status: bound to integrin ", str(self.cell_target_id), ".", str(self.integrin_target_id),  " at (", str(self.x_target), ",", str(self.y_target), ")")))
         else:
@@ -127,10 +128,54 @@ class Cell():
 
 def readFile(filename):
     if filename == "PATCON":
-        pass
+        try:
+            datafile = open("PATCON", "r", encoding="utf-8")
+            listofstring = datafile.readlines()
+            datafile.close()
+            strippedstring = []
+            for line in listofstring:
+                newline = line.rstrip('\n')
+                strippedstring.append(newline)
+        except:
+            strippedstring = 'Error in opening SIMCON file'
+        finally:
+            return strippedstring
+    elif filename == "CELCON":
+        try:
+            datafile = open('CELCON', 'r', encoding = 'UTF-8')
+            listofstring = datafile.readlines()
+            datafile.close()
+            strippedstring = []
+            for line in listofstring:
+                newline = line.rstrip('\n')
+                strippedstring.append(newline)
+        except:
+            strippedstring = 'Error in opening CELCON file'
+        finally:
+            return strippedstring
+    elif filenmae == "SIMCON":
+
     else:
         print('File name is not correct')
         return 0
+
+def get_value(listofstring, startIndex, endIndex, arg):
+    index = 0
+    for i in range(startIndex, endIndex):
+        data = listofstring[i].split()
+        if data[0] == arg:
+            index = i
+            break
+        else:
+            index += 1
+    
+    if len(data) > 2:
+        value = data[1:]
+    elif len(data) == 2:
+        value = data[1]
+    else:
+        value = -1
+    return value
 
 
     
