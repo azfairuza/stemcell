@@ -124,6 +124,15 @@ class Cell():
     def getIntegrinList(self):
         for reseptor in self.integrin:
             reseptor.getInformation()
+
+def readFile(filename):
+    if filename == "PATCON":
+        pass
+    else:
+        print('File name is not correct')
+        return 0
+
+
     
     
 

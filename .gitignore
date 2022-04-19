@@ -12,8 +12,7 @@ temp/
 __pycache__
 *.pyc
 
-#ignore main.py for now
-main.py
 
-#ignore flowchart folder
+#ignore folders
 flowchart/
+old_file/
