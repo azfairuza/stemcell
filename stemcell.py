@@ -22,13 +22,14 @@ class Ligand():
 
 class Nanopattern():
 
-    def __init__(self, height, width, grid_height, grid_width, position_list):
+    def __init__(self, height, width, grid_height, grid_width, position_list, dot_size):
         # nanopattern properties
         self.height = height
         self.width = width
         self.grid_height = grid_height
         self.grid_width = grid_width
         self.position_seed = position_list
+        self.dot_size = dot_size
         row_number = np.ceil(height/grid_height)
         col_number = np.ceil(width/grid_width)
 
@@ -39,6 +40,8 @@ class Nanopattern():
                 for position in position_list:
                     self.ligand.append(Ligand(position[0] + col*grid_width, position[2] + row*grid_height))
         
+    
+    
     def getNotTargetedLigand(self):
         members = []
         for ligand in self.ligand:
@@ -85,14 +88,14 @@ class Integrin():
             if self.object_type == 1:
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', ' status: bound to ligand ', str(self.ligand_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
             elif self.object_type == 2:
-                return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", " status: bound to integrin ", str(self.cell_target_id), ".", str(self.integrin_target_id),  " at (", str(self.x_target), ",", str(self.y_target), ")")))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', ' status: bound to integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id),  ' at (', str(self.x_target), ',', str(self.y_target), ')')))
         else:
             if self.object_type == 0:
-                return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", "status: not bound")))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: not bound')))
             elif self.object_type == 1:
-                return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", "status: targeting ligand ", str(self.ligand_target_id), " at (", str(self.x_target), ",", str(self.y_target), ")")))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting ligand ', str(self.ligand_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
             elif self.object_type == 2:
-                return("".join(("integrin ", str(self.cell_id), ".", str(self.integrin_id), ": (", str(self.x_position), ",", str(self.y_position), ")", "status: targeting integrin ", str(self.cell_target_id), ".", str(self.integrin_target_id), " at (", str(self.x_target), ",", str(self.y_target), ")")))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
     
     def getLigandDistance(self, ):
         pass
@@ -121,15 +124,16 @@ class Cell():
         for i in range(total_integrin):
             self.integrin.append(Integrin(Cell.cell_number, x_center, y_center, max_radius))
 
-    
     def getIntegrinList(self):
         for reseptor in self.integrin:
             reseptor.getInformation()
 
+
 def readFile(filename):
-    if filename == "PATCON":
+    print(filename)
+    if filename == 'PATCON':
         try:
-            datafile = open("PATCON", "r", encoding="utf-8")
+            datafile = open('PATCON.txt', 'r', encoding='utf-8')
             listofstring = datafile.readlines()
             datafile.close()
             strippedstring = []
@@ -137,12 +141,12 @@ def readFile(filename):
                 newline = line.rstrip('\n')
                 strippedstring.append(newline)
         except:
-            strippedstring = 'Error in opening SIMCON file'
+            strippedstring = 'Error in opening PATCON file'
         finally:
             return strippedstring
-    elif filename == "CELCON":
+    elif filename == 'CELCON':
         try:
-            datafile = open('CELCON', 'r', encoding = 'UTF-8')
+            datafile = open('CELCON.txt', 'r', encoding = 'UTF-8')
             listofstring = datafile.readlines()
             datafile.close()
             strippedstring = []
@@ -153,7 +157,19 @@ def readFile(filename):
             strippedstring = 'Error in opening CELCON file'
         finally:
             return strippedstring
-    elif filenmae == "SIMCON":
+    elif filename == 'SIMCON':
+        try:
+            datafile = open('SIMCON.txt', 'r', encoding='utf-8')
+            listofstring = datafile.readlines()
+            datafile.close()
+            strippedstring = []
+            for line in listofstring:
+                newline = line.rstrip('\n')
+                strippedstring.append(newline)
+        except:
+            strippedstring = 'Error in opening SIMCON file'
+        finally:
+            return strippedstring
 
     else:
         print('File name is not correct')

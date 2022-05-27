@@ -1,13 +1,18 @@
 # STEM CELL THESIS PROJECT
 
 ## DESCRIPTION
+A library to simulate stem cell 
 
-## UPDATE JOURNAL
-### 20220404
-**1249**: start writing the update journal, have been learning Linux, git, virtual environment, and zsh in the past week. 
+## INSTRUCTION
+### Instalation for dependencies
+1. Go to the *Stem_Cell* folder
+2. Activate the virtual environment 
+`source virtualenv\bin\activate`
+3. if there is no virtual environment, build it first
+`python3 -m venv c:\path\to\myenv`
+4. Activate the virtual environment
+5. Download file *requirement.txt*
+6. Instal dependencies
+`pip install -r requirement.txt`
+7. Done
 
-**1720**: succesfully create cell object that contain integrin. My computer is so slow, need to be repaired as soon as possibe. 
-
-**2208**: start working again. Had unninstaled every windows program that seems heavy. Also configure windows settings to focus on performance. Result: improvement in performance.
-
-**2317**: Confused to find the best nearest neighbor algorithm. 
