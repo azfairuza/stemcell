@@ -9,3 +9,10 @@
 
 ### 20220527
 **1449**: it's been almost 2 months i have not updating my code (especially the journal) let we start again. Today i found that i nearly forgot the code i'd written. So, I would like to learn about commenting and documentation in a proper way.
+
+**1644**: finishing this code session, adding several comments to help recalling when I abandon the code
+for a long time. 
+TODO: making the code looks neater especially the long line codes.
+
+### 20220531
+**1413**: waiting for a couple of minutes to start opening the vscode because there is an update that need to be installed. We will continue to do the last assignment

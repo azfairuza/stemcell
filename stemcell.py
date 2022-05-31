@@ -94,30 +94,43 @@ class Integrin():
         self.ligand_target_id = 0      # ligand id number for integrin-ligand complex 
         self.integrin_target_id = 0    # integrin id number for integrin-integrin complex
         self.x_target = 0              # x-position of the targeted object
-        self.y_target = 0              # y-position of the 
+        self.y_target = 0              # y-position of the targeted object
     
     def getInformation(self):
+    # procedure to get integrin information 
         if self.bound_status == True:
             if self.object_type == 1:
+            # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: bound to ligand [ligand_id] at ([x_ligand],[y_ligand])
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', ' status: bound to ligand ', str(self.ligand_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
+            
             elif self.object_type == 2:
+            # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: bound to integrin [cell_id*].[integrin_id*] at ([x_integrin*],[y_integrin*])
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', ' status: bound to integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id),  ' at (', str(self.x_target), ',', str(self.y_target), ')')))
+        
         else:
             if self.object_type == 0:
+            # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: not bound
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: not bound')))
+            
             elif self.object_type == 1:
+            # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: targeting ligand [ligand_id] at ([x_ligand],[y_ligand])
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting ligand ', str(self.ligand_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
+            
             elif self.object_type == 2:
+            # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: targeting integrin [cell_id*].[integrin_id*]
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
     
     def getLigandDistance(self, ):
+    # procedure to get distance to a ligand
         pass
     
     def getIntegrinDistance(self, self_cell, target_integrin, target_cell):
+    # procedure to get distance to an integrin
         pass
 
     def searchNearestLigand(self, list_of_ligands, distance):
-        
+    # procedure to get Nearest Ligand, returned in a list
+    
         for ligand in list_of_ligands:
             pass
         pass
