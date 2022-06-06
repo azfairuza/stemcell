@@ -18,3 +18,8 @@ TODO: making the code looks neater especially the long line codes.
 **1413**: waiting for a couple of minutes to start opening the vscode because there is an update that need to be installed. We will continue to do the last assignment
 
 **1738**: TODO: finish the code, especially the cell section. and we can continue the code building.
+
+### 20220606
+**1336**: start to do some progress today until 1630. I'll finish the task about making some comment and documentaries for the code. Bismillah.
+
+**1709**: I have done finishing the code but after that i was distracted by an email from Osaka about the visa. TODO: try the PATCON in Jupyter notebook until the program can generate proper nanopattern

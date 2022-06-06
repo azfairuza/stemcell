@@ -88,7 +88,7 @@ class Integrin():
             self.surface = False       # definition: integrin is in the inside of the cell
 
         # bound properties
-        self.bound_status = False      # False: intgrin is not bounded to anyone
+        self.bound_status = False      # False: integrin is not bounded to anyone
         self.object_type = 0           # 0: Empty ; 1: Ligand ; 2: Integrin
         self.cell_target_id = 0        # cell id number for integrin-integrin complex
         self.ligand_target_id = 0      # ligand id number for integrin-ligand complex 
@@ -131,69 +131,86 @@ class Integrin():
     def searchNearestLigand(self, list_of_ligands, distance):
     # procedure to get Nearest Ligand, returned in a list
     
-        for ligand in list_of_ligands:
+        for ligand in list_of_ligands:      # search every ligand
             pass
         pass
 
 class Cell():
-    cell_number = 0
+# class to simulate cell
+
+    cell_number = 0       # number of cell created
        
     def __init__(self, x_center, y_center, max_radius, total_integrin):
+        Cell.cell_number += 1   
+        
         #cell properties
-        self.mass = 100
-        self.x_center_of_mass = x_center
-        self.y_center_of_mass = y_center
+        self.mass = 100                         # mass of the cell (in center of mass)
+        self.x_center_of_mass = x_center        # x position of the center of mass of the cell
+        self.y_center_of_mass = y_center        # y position of the center of mass of the cell
         
         #cell integrin members
-        self.integrin = []
-        Cell.cell_number += 1
-        for i in range(total_integrin):
-            self.integrin.append(Integrin(Cell.cell_number, x_center, y_center, max_radius))
+        self.integrin = []                                                                      # empty list for integrin                                                                # 
+        for i in range(total_integrin):                                                         
+            self.integrin.append(Integrin(Cell.cell_number, x_center, y_center, max_radius))    # build the integrin
 
     def getIntegrinList(self):
+    # get information of all integrins in the cell
         for reseptor in self.integrin:
             reseptor.getInformation()
 
 
 def readFile(filename):
+# procedure to read input file
     print(filename)
     if filename == 'PATCON':
+    # open PATCON file
         try:
-            datafile = open('PATCON.txt', 'r', encoding='utf-8')
+            datafile = open('PATCON.txt', 'r', encoding='utf-8')    #
             listofstring = datafile.readlines()
             datafile.close()
-            strippedstring = []
+
+            # strip the '\n' in the end of every line
+            strippedstring = []                    
             for line in listofstring:
                 newline = line.rstrip('\n')
                 strippedstring.append(newline)
         except:
-            strippedstring = 'Error in opening PATCON file'
+            strippedstring = 'Error in opening PATCON file'     # error flag if PATCON can not be opened
         finally:
             return strippedstring
+
     elif filename == 'CELCON':
+    # open CELCON file
         try:
             datafile = open('CELCON.txt', 'r', encoding = 'UTF-8')
             listofstring = datafile.readlines()
             datafile.close()
+
+
+            # strip the '\n' in the end of every line
             strippedstring = []
             for line in listofstring:
                 newline = line.rstrip('\n')
                 strippedstring.append(newline)
         except:
-            strippedstring = 'Error in opening CELCON file'
+            strippedstring = 'Error in opening CELCON file'     # error flag if CELCON can not be opened
         finally:
             return strippedstring
+
     elif filename == 'SIMCON':
+    # open SIMCON file
         try:
             datafile = open('SIMCON.txt', 'r', encoding='utf-8')
             listofstring = datafile.readlines()
             datafile.close()
+
+            # strip the '\n' in the end of every line
             strippedstring = []
             for line in listofstring:
                 newline = line.rstrip('\n')
                 strippedstring.append(newline)
         except:
-            strippedstring = 'Error in opening SIMCON file'
+            strippedstring = 'Error in opening SIMCON file'     # error flag if SIMCON can not be opened
         finally:
             return strippedstring
 
