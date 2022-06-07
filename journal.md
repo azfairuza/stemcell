@@ -22,4 +22,12 @@ TODO: making the code looks neater especially the long line codes.
 ### 20220606
 **1336**: start to do some progress today until 1630. I'll finish the task about making some comment and documentaries for the code. Bismillah.
 
-**1709**: I have done finishing the code but after that i was distracted by an email from Osaka about the visa. TODO: try the PATCON in Jupyter notebook until the program can generate proper nanopattern
+**1709**: I have done finishing the code but after that i was distracted by an email from Osaka about the visa. _TODO_: try the PATCON in Jupyter notebook until the program can generate proper nanopattern.
+
+### 20220607
+**1335**: After bought a gallon of water and cleaning the water dispenser, finally i can start to continue the thesis work. Today i would like to try implement the program on jupyter notebook.
+
+**1651**: found out that we can use 'list' as variabel name
+
+**1716**: Finish coding today. Have done updating the algorithm for get value. Found out the built in function 'index' to find the index number of an element in a list. Found out that we avoid to use 'list' as variable name. And also found out the pythonic way to convert string number into float
+_TODO_: There is an error regarding the library, the program seems not updated and refer to old program, the string of the ligand position list contain space and need to be separated. TLDR; error in get value function

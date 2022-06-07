@@ -4,6 +4,8 @@
 from cmath import sqrt
 from encodings import utf_8
 from random import uniform
+from re import I
+import string
 import numpy as np
 
 class Ligand():
@@ -30,7 +32,7 @@ class Nanopattern():
 # class for simulate nanopattern
 
     def __init__(self, height: float, width: float, grid_height: float, grid_width: float, 
-        position_list: list , dot_size: float):
+        ligand_position: list , dot_size: float):
     # inital procedure when creating a nanopattern
         
         # nanopattern properties
@@ -38,7 +40,7 @@ class Nanopattern():
         self.width = width                         # nanopattern width
         self.grid_height = grid_height             # nanopattern grid height
         self.grid_width = grid_width               # nanopattern grid width
-        self.position_seed = position_list         # ligand position's list
+        self.position_seed = ligand_position       # ligand position's list
         self.dot_size = dot_size                   # ligand size (dot size in simulation)
         row_number = np.ceil(height/grid_height)   # number of grid row created
         col_number = np.ceil(width/grid_width)     # number of grid column created
@@ -47,7 +49,7 @@ class Nanopattern():
         self.ligand = []
         for row in range(row_number):
             for col in range(col_number):
-                for position in position_list:
+                for position in ligand_position:
                     self.ligand.append(Ligand(position[0] + col*grid_width, position[1] + row*grid_height))
         
     
@@ -128,10 +130,10 @@ class Integrin():
     # procedure to get distance to an integrin
         pass
 
-    def searchNearestLigand(self, list_of_ligands, distance):
+    def searchNearestLigand(self, lst_of_ligands, distance):
     # procedure to get Nearest Ligand, returned in a list
     
-        for ligand in list_of_ligands:      # search every ligand
+        for ligand in lst_of_ligands:      # search every ligand
             pass
         pass
 
@@ -165,76 +167,78 @@ def readFile(filename):
     if filename == 'PATCON':
     # open PATCON file
         try:
-            datafile = open('PATCON.txt', 'r', encoding='utf-8')    #
-            listofstring = datafile.readlines()
-            datafile.close()
-
-            # strip the '\n' in the end of every line
-            strippedstring = []                    
-            for line in listofstring:
-                newline = line.rstrip('\n')
-                strippedstring.append(newline)
+            data_file = open('PATCON.txt', 'r', encoding='utf-8')    
+            lst_strng = data_file.readlines()
+            data_file.close()
+            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n'              
         except:
-            strippedstring = 'Error in opening PATCON file'     # error flag if PATCON can not be opened
+            stripped_strng = 'Error in opening PATCON file'    # error flag if PATCON can not be opened
         finally:
-            return strippedstring
+            return stripped_strng
 
     elif filename == 'CELCON':
     # open CELCON file
         try:
-            datafile = open('CELCON.txt', 'r', encoding = 'UTF-8')
-            listofstring = datafile.readlines()
-            datafile.close()
-
-
-            # strip the '\n' in the end of every line
-            strippedstring = []
-            for line in listofstring:
-                newline = line.rstrip('\n')
-                strippedstring.append(newline)
+            data_file = open('CELCON.txt', 'r', encoding = 'UTF-8')
+            lst_strng = data_file.readlines()
+            data_file.close()
+            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n' 
         except:
-            strippedstring = 'Error in opening CELCON file'     # error flag if CELCON can not be opened
+            stripped_strng = 'Error in opening CELCON file'    # error flag if CELCON can not be opened
         finally:
-            return strippedstring
+            return stripped_strng
 
     elif filename == 'SIMCON':
     # open SIMCON file
         try:
-            datafile = open('SIMCON.txt', 'r', encoding='utf-8')
-            listofstring = datafile.readlines()
-            datafile.close()
-
-            # strip the '\n' in the end of every line
-            strippedstring = []
-            for line in listofstring:
-                newline = line.rstrip('\n')
-                strippedstring.append(newline)
+            data_file = open('SIMCON.txt', 'r', encoding='utf-8')
+            lst_strng = data_file.readlines()
+            data_file.close()
+            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n' 
         except:
-            strippedstring = 'Error in opening SIMCON file'     # error flag if SIMCON can not be opened
+            stripped_strng = 'Error in opening SIMCON file'    # error flag if SIMCON can not be opened
         finally:
-            return strippedstring
+            return stripped_strng
 
     else:
         print('File name is not correct')
         return 0
 
-def get_value(listofstring, startIndex, endIndex, arg):
-    index = 0
-    for i in range(startIndex, endIndex):
-        data = listofstring[i].split()
-        if data[0] == arg:
-            index = i
-            break
-        else:
-            index += 1
-    
-    if len(data) > 2:
-        value = data[1:]
-    elif len(data) == 2:
-        value = data[1]
-    else:
-        value = -1
-    return value
+def get_value(lst_strng: list, property_name: string):
+# procedure to get the value of a property in CON file
+    print(property_name)
+    if property_name == 'LIGAND':
+        start_index = (lst_strng.index('#LIGAND') + 1)
+        end_index = lst_strng.index('#END')
+        ligand_position = []
+        for i in range(start_index, end_index):
+            print(lst_strng[i])
+            #dot_position = [float(j) for j in lst_strng[i]]
+            ligand_position.append(lst_strng[i])
+        return ligand_position
+    else: 
+        start_index = (lst_strng.index('#CONFIG') + 1)
+        end_index =  lst_strng.index('#END')                                
+        value = -1 
+        for i in range(start_index, end_index):             # search from starting index to the end index
+            data = lst_strng[i].split()                     # split the string by space or tab
+            if data[0] == property_name:                    # if the first string is equal with argument
+                if len(data) > 2:                           # if the string list contain more than 2 members
+                    raw_value = data[1:]
+                    value = [float(i) for i in raw_value]   # the value is from index 1 to end in float
+                elif len(data) == 2:                        # if the string list contain 2 members
+                    value = float(data[1])                  # the value is in the index 1
+                break
+        return value                     
+
+def filter_element(input_lst):
+# procedure to remove empty element in a list and remove the '\n' i
+    new_lst = []
+    for element in input_lst:
+        new_element = element.rstrip()          # remove the '\n'    
+        if new_element:                         # check if the element is not empty
+            new_lst.append(new_element)
+    return new_lst
 
 
     
