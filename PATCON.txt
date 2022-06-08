@@ -2,11 +2,13 @@
 
 #CONFIG
 dotnumber 1
-unitsize  100 100
+unitsize  250 250
 subsize   5000 5000
 dotsize   10
 
 #LIGAND
-0.5 0.5
+#x      y
+0.5     0.5
+0       0
 
 #END

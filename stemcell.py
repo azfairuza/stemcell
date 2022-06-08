@@ -4,9 +4,11 @@
 from cmath import sqrt
 from encodings import utf_8
 from random import uniform
-from re import I
 import string
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
+from matplotlib.collections import PatchCollection
 
 class Ligand():
 # class for simulate ligand in nanopattern
@@ -26,6 +28,9 @@ class Ligand():
         self.targeted_status = False             # False: ligand is not targeted by any integrin
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
+    
+    def resetLigandNumber():
+        Ligand.ligand_number = 0
         
 
 class Nanopattern():
@@ -36,23 +41,23 @@ class Nanopattern():
     # inital procedure when creating a nanopattern
         
         # nanopattern properties
-        self.height = height                       # nanopattern height
-        self.width = width                         # nanopattern width
-        self.grid_height = grid_height             # nanopattern grid height
-        self.grid_width = grid_width               # nanopattern grid width
-        self.position_seed = ligand_position       # ligand position's list
-        self.dot_size = dot_size                   # ligand size (dot size in simulation)
-        row_number = np.ceil(height/grid_height)   # number of grid row created
-        col_number = np.ceil(width/grid_width)     # number of grid column created
+        self.height = height                            # nanopattern height
+        self.width = width                              # nanopattern width
+        self.grid_height = grid_height                  # nanopattern grid height
+        self.grid_width = grid_width                    # nanopattern grid width
+        self.position_seed = ligand_position            # ligand position's list
+        self.dot_size = dot_size                        # ligand size (dot size in simulation)
+        row_number = int(np.ceil(height/grid_height))   # number of grid row created
+        col_number = int(np.ceil(width/grid_width))     # number of grid column created
 
         # nanopattern ligand members
         self.ligand = []
         for row in range(row_number):
             for col in range(col_number):
                 for position in ligand_position:
-                    self.ligand.append(Ligand(position[0] + col*grid_width, position[1] + row*grid_height))
-        
-    
+                    self.ligand.append(Ligand((position[0] + col)*grid_width, (position[1] + row)*grid_height))
+
+        print('nanopattern has been created')
     
     def getNotTargetedLigand(self) -> list:
     # Procedure to get a list of ligand that is not targeted by integrin
@@ -61,6 +66,32 @@ class Nanopattern():
             if ligand.bound_status == False:       
                 members.append(ligand)
         return members
+    
+    def getXPositionLigand(self):
+    # Procedure to get x position of ligands in a list
+        position = []
+        for ligand in self.ligand:
+            position.append(ligand.x_position)
+        return position
+    
+    def getYPositionLigand(self):
+    # Procedure to get y position of ligand in a list
+        position = []
+        for ligand in self.ligand:
+            position.append(ligand.y_position)
+        return position
+
+    def show(self):
+    # Procedure to draw only nanopattern
+        plt.figure(figsize=(20, 20))
+        ax = plt.subplot(aspect='equal')
+        x_position = self.getXPositionLigand()
+        y_position = self.getYPositionLigand()
+
+        out = circles(x_position, y_position, self.dot_size, 'green', alpha=0.5, ec='none')
+        plt.xlim(0, self.width)
+        plt.ylim(0, self.height)
+
 
 
 class Integrin():
@@ -142,11 +173,11 @@ class Cell():
 
     cell_number = 0       # number of cell created
        
-    def __init__(self, x_center, y_center, max_radius, total_integrin):
+    def __init__(self, x_center, y_center, max_radius, total_integrin, cell_mass):
         Cell.cell_number += 1   
         
         #cell properties
-        self.mass = 100                         # mass of the cell (in center of mass)
+        self.mass = cell_mass                        # mass of the cell (in center of mass)
         self.x_center_of_mass = x_center        # x position of the center of mass of the cell
         self.y_center_of_mass = y_center        # y position of the center of mass of the cell
         
@@ -163,7 +194,7 @@ class Cell():
 
 def readFile(filename):
 # procedure to read input file
-    print(filename)
+
     if filename == 'PATCON':
     # open PATCON file
         try:
@@ -206,16 +237,22 @@ def readFile(filename):
 
 def get_value(lst_strng: list, property_name: string):
 # procedure to get the value of a property in CON file
-    print(property_name)
-    if property_name == 'LIGAND':
-        start_index = (lst_strng.index('#LIGAND') + 1)
-        end_index = lst_strng.index('#END')
-        ligand_position = []
+    if property_name == 'LIGAND':                                       # get ligand position
+        start_index = (lst_strng.index('#LIGAND') + 2)                  # start index to search
+        end_index = lst_strng.index('#END')                             # last index to search
+        ligand_position = []                                            # container for the ligands
         for i in range(start_index, end_index):
-            print(lst_strng[i])
-            #dot_position = [float(j) for j in lst_strng[i]]
-            ligand_position.append(lst_strng[i])
+            dot_position = [float(j) for j in lst_strng[i].split()]     # make the value in float type
+            ligand_position.append(dot_position)                        # also remove the spaces and tabs
         return ligand_position
+    elif property_name == 'CELL':                                       # get cell properties
+        start_index = (lst_strng.index('#CELL')+2)                      # start index to search
+        end_index = lst_strng.index('#END')                             # last index to search
+        cell_properties = []                                            # cell properties container
+        for i in range(start_index, end_index):
+            cell_property = [float(j) for j in lst_strng[i].split()]    # make the value in float type
+            cell_properties.append(cell_property)                       # also remove the spaces and tabs
+        return cell_properties
     else: 
         start_index = (lst_strng.index('#CONFIG') + 1)
         end_index =  lst_strng.index('#END')                                
@@ -240,6 +277,69 @@ def filter_element(input_lst):
             new_lst.append(new_element)
     return new_lst
 
+def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
+    """
+    Make a scatter of circles plot of x vs y, where x and y are sequence 
+    like objects of the same lengths. The size of circles are in data scale.
+
+    Parameters
+    ----------
+    x,y : scalar or array_like, shape (n, )
+        Input data
+    s : scalar or array_like, shape (n, ) 
+        Radius of circle in data unit.
+    c : color or sequence of color, optional, default : 'b'
+        `c` can be a single color format string, or a sequence of color
+        specifications of length `N`, or a sequence of `N` numbers to be
+        mapped to colors using the `cmap` and `norm` specified via kwargs.
+        Note that `c` should not be a single numeric RGB or RGBA sequence 
+        because that is indistinguishable from an array of values
+        to be colormapped. (If you insist, use `color` instead.)  
+        `c` can be a 2-D array in which the rows are RGB or RGBA, however. 
+    vmin, vmax : scalar, optional, default: None
+        `vmin` and `vmax` are used in conjunction with `norm` to normalize
+        luminance data.  If either are `None`, the min and max of the
+        color array is used.
+    kwargs : `~matplotlib.collections.Collection` properties
+        Eg. alpha, edgecolor(ec), facecolor(fc), linewidth(lw), linestyle(ls), 
+        norm, cmap, transform, etc.
+
+    Returns
+    -------
+    paths : `~matplotlib.collections.PathCollection`
+
+    Examples
+    --------
+    a = np.arange(11)
+    circles(a, a, a*0.2, c=a, alpha=0.5, edgecolor='none')
+    plt.colorbar()
+
+    License
+    --------
+    This code is under [The BSD 3-Clause License]
+    (http://opensource.org/licenses/BSD-3-Clause)
+    """
+  
+    if np.isscalar(c):
+        kwargs.setdefault('color', c)
+        c = None
+    if 'fc' in kwargs: kwargs.setdefault('facecolor', kwargs.pop('fc'))
+    if 'ec' in kwargs: kwargs.setdefault('edgecolor', kwargs.pop('ec'))
+    if 'ls' in kwargs: kwargs.setdefault('linestyle', kwargs.pop('ls'))
+    if 'lw' in kwargs: kwargs.setdefault('linewidth', kwargs.pop('lw'))
+
+    patches = [Circle((x_, y_), s_) for x_, y_, s_ in np.broadcast(x, y, s)]
+    collection = PatchCollection(patches, **kwargs)
+    if c is not None:
+        collection.set_array(np.asarray(c))
+        collection.set_clim(vmin, vmax)
+
+    ax = plt.gca()
+    ax.add_collection(collection)
+    ax.autoscale_view()
+    if c is not None:
+        plt.sci(collection)
+    return collection
 
     
     

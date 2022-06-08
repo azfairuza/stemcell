@@ -3,10 +3,10 @@
 #CONFIG
 cellnumber 1
 ressize 10
-minspace 40
 resmass 1 
 
 #CELL
-2500 2500 1500 2000
+#x-pos      y-pos       radius      intNumber   cellMass
+2500        2500        150         50          100
 
 #END

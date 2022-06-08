@@ -31,3 +31,10 @@ TODO: making the code looks neater especially the long line codes.
 
 **1716**: Finish coding today. Have done updating the algorithm for get value. Found out the built in function 'index' to find the index number of an element in a list. Found out that we avoid to use 'list' as variable name. And also found out the pythonic way to convert string number into float
 _TODO_: There is an error regarding the library, the program seems not updated and refer to old program, the string of the ligand position list contain space and need to be separated. TLDR; error in get value function
+
+### 20220608
+**1339**: Bismillah, start to make some progress today. As we know that yesterday I got some homeworks, so today I'll try to finish the homework.
+
+**1617**: Alhamdulillah, nanopattern has been succesfully created. I also added show function to draw the nanopattern only. I got a circles function that can directly print the ligand in nanopattern. Next, build the cells.
+
+**1712**: Finish coding for today. Succesfully build the nanopattern, adding get_value function for reading cell properties, and also start to build the cells. TODO: build the cell and show the cells, one by one and all cells. 
