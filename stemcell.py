@@ -1,7 +1,6 @@
 #Author: azfairuza
 #email: fairuza.zacky1@gmail.com
 
-from cmath import sqrt
 from encodings import utf_8
 from random import uniform
 import string
@@ -29,7 +28,8 @@ class Ligand():
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
     
-    def resetLigandNumber():
+    def resetNumber():
+    # procedure to reset ligand number
         Ligand.ligand_number = 0
         
 
@@ -83,6 +83,7 @@ class Nanopattern():
 
     def show(self):
     # Procedure to draw only nanopattern
+        
         plt.figure(figsize=(20, 20))
         ax = plt.subplot(aspect='equal')
         x_position = self.getXPositionLigand()
@@ -91,6 +92,8 @@ class Nanopattern():
         out = circles(x_position, y_position, self.dot_size, 'green', alpha=0.5, ec='none')
         plt.xlim(0, self.width)
         plt.ylim(0, self.height)
+    
+    
 
 
 
@@ -98,21 +101,33 @@ class Integrin():
 # class to simulate integrin
 
     # class properties
-    number_integrin = 0
+    integrin_number = 0
     
-    def __init__(self, cell_id, x_center, y_center, max_radius):
+    def __init__(self, cell_id, x_center, y_center, max_radius, integrin_size, lst_integrin):
         
-        Integrin.number_integrin += 1         # Update integrin number
+        Integrin.integrin_number += 1                   # Update integrin number
 
         # identity of integrin
-        self.cell_id = cell_id                       # cell id number
-        self.integrin_id = Integrin.number_integrin  # integrin id number 
+        self.cell_id = cell_id                          # cell id number
+        self.integrin_id = Integrin.integrin_number     # integrin id number 
         
         # position property
-        radius = round(uniform(0, max_radius), 2)                      # distance from the cell's center
-        theta = round(uniform(0,360), 2)                               # the angle from x-axis
-        self.x_position = radius*np.cos(np.deg2rad(theta)) + x_center  # convert polar to x-position
-        self.y_position = radius*np.cos(np.deg2rad(theta)) + y_center  # convert polat to y-position
+        while True:
+            radius = round(uniform(0, max_radius), 2)                      # distance from the cell's center
+            theta = round(uniform(0,360), 2)                               # the angle from x-axis
+            self.x_position = radius*np.cos(np.deg2rad(theta)) + x_center  # convert polar to x-position
+            self.y_position = radius*np.sin(np.deg2rad(theta)) + y_center  # convert polat to y-position
+            if lst_integrin:
+                short_distance = False
+                for obj in lst_integrin:
+                    distnce = np.sqrt((self.x_position - obj.x_position)**2 + (self.y_position - obj.y_position)**2)
+                    if distnce < (integrin_size*4):
+                        short_distance = True
+                        break
+                if short_distance == False:
+                    break
+            else:
+                break
 
         # condition properties
         if radius >= 0.9*max_radius:
@@ -128,9 +143,15 @@ class Integrin():
         self.integrin_target_id = 0    # integrin id number for integrin-integrin complex
         self.x_target = 0              # x-position of the targeted object
         self.y_target = 0              # y-position of the targeted object
+        self.mass = 0                                   # integrin mass
+    
+    def resetNumber():
+    # procedure to reset Integrin number
+        Integrin.integrin_number = 0
     
     def getInformation(self):
     # procedure to get integrin information 
+        
         if self.bound_status == True:
             if self.object_type == 1:
             # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: bound to ligand [ligand_id] at ([x_ligand],[y_ligand])
@@ -173,23 +194,59 @@ class Cell():
 
     cell_number = 0       # number of cell created
        
-    def __init__(self, x_center, y_center, max_radius, total_integrin, cell_mass):
+    def __init__(self, x_center, y_center, max_radius, total_integrin, cell_mass, integrin_size):
         Cell.cell_number += 1   
         
         #cell properties
-        self.mass = cell_mass                        # mass of the cell (in center of mass)
+        self.mass = cell_mass                   # mass of the cell (in center of mass)
         self.x_center_of_mass = x_center        # x position of the center of mass of the cell
         self.y_center_of_mass = y_center        # y position of the center of mass of the cell
+        self.integrin_size = integrin_size      # the size of integrin
+        self.radius = max_radius                # the outer radius of the cell
         
         #cell integrin members
-        self.integrin = []                                                                      # empty list for integrin                                                                # 
-        for i in range(total_integrin):                                                         
-            self.integrin.append(Integrin(Cell.cell_number, x_center, y_center, max_radius))    # build the integrin
+        self.integrin = []                                                       # empty list for integrin                                                                # 
+        for i in range(int(total_integrin)):      
+            build_integrin = Integrin(Cell.cell_number, x_center, y_center, 
+                max_radius, integrin_size, self.integrin)                                                   
+            self.integrin.append(build_integrin)                                 # build the integrin
+
+    def resetNumber():
+    # procedure to reset cell number
+        Cell.cell_number = 0
 
     def getIntegrinList(self):
     # get information of all integrins in the cell
         for reseptor in self.integrin:
             reseptor.getInformation()
+
+    def getXPositionIntegrin(self):
+    # procedure to get x position of integrins, contained in a list
+        position = []
+        for integrin in self.integrin:
+            position.append(integrin.x_position)
+        return position
+    
+    def getYPositionIntegrin(self):
+    # procedure to get y position of integrins, contained in a list
+        position = []
+        for integrin in self.integrin:
+            position.append(integrin.y_position)
+        return position
+
+    def show(self, substrate: Nanopattern):
+    # procedure to draw only nanopattern
+        plt.figure(figsize=(20, 20))
+        ax = plt.subplot(aspect='equal')
+        x_position = self.getXPositionIntegrin()                                        
+        y_position = self.getYPositionIntegrin()
+        surface_circle = plt.Circle((self.x_center_of_mass, self.y_center_of_mass), 
+            self.radius, color='black', fill=False, ls='--')
+        plt.gca().add_patch(surface_circle)
+
+        out = circles(x_position, y_position, self.integrin_size, 'red', alpha=0.5, ec='none')
+        plt.xlim(0, substrate.width)
+        plt.ylim(0, substrate.height)
 
 
 def readFile(filename):

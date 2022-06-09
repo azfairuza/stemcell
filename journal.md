@@ -38,3 +38,10 @@ _TODO_: There is an error regarding the library, the program seems not updated a
 **1617**: Alhamdulillah, nanopattern has been succesfully created. I also added show function to draw the nanopattern only. I got a circles function that can directly print the ligand in nanopattern. Next, build the cells.
 
 **1712**: Finish coding for today. Succesfully build the nanopattern, adding get_value function for reading cell properties, and also start to build the cells. TODO: build the cell and show the cells, one by one and all cells. 
+
+### 20220609
+**0933**: bismillah, today I start coding quite early. At this time, the lab has agenda to discuss another project so it is quite crowded. But i love it. For the task that i want to finish today, as I have wrote yesterday, I want to make show function for cell to display cell that has been built. The show function has 2 option, it can show a single cell or all cell at once.
+
+**1655**: succesfully generate cell and draw for single cell
+_TODO_: 1. draw for multi cell or many cell at once
+        2. making flag so that if the integrin is to much the cell cannot be generated

@@ -7,6 +7,6 @@ resmass 1
 
 #CELL
 #x-pos      y-pos       radius      intNumber   cellMass
-2500        2500        150         50          100
+2500        2500        250         60          100
 
 #END
