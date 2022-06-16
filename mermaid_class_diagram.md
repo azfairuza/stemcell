@@ -66,3 +66,6 @@ classDiagram
         show(self, Nanopattern)
         resetNumber(cls)
     }
+    direction TD
+    Ligand "1..*" --* "1" Nanopattern : Contains
+    Integrin "1..*" --* "1..*" Cell : Contains
