@@ -45,3 +45,6 @@ _TODO_: There is an error regarding the library, the program seems not updated a
 **1655**: succesfully generate cell and draw for single cell
 _TODO_: 1. draw for multi cell or many cell at once
         2. making flag so that if the integrin is to much the cell cannot be generated
+
+### 20220616
+**0827**: Bismillah, starting early on. I need to finish the tasks at 23 june 2022. Hopefully i could make it in time. Right now i want to finish the class attribute to be submited to supervisor. 
