@@ -1,6 +1,7 @@
 #Author: azfairuza
 #email: fairuza.zacky1@gmail.com
 
+from ast import List
 from encodings import utf_8
 from random import uniform
 import string
@@ -28,11 +29,11 @@ class Ligand():
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
     
-    def resetNumber():
+    @classmethod
+    def resetNumber(cls):
     # procedure to reset ligand number
-        Ligand.ligand_number = 0
+        cls.ligand_number = 0
         
-
 class Nanopattern():
 # class for simulate nanopattern
 
@@ -47,13 +48,13 @@ class Nanopattern():
         self.grid_width = grid_width                    # nanopattern grid width
         self.position_seed = ligand_position            # ligand position's list
         self.dot_size = dot_size                        # ligand size (dot size in simulation)
-        row_number = int(np.ceil(height/grid_height))   # number of grid row created
-        col_number = int(np.ceil(width/grid_width))     # number of grid column created
+        self.row_number = int(np.ceil(height/grid_height))   # number of grid row created
+        self.col_number = int(np.ceil(width/grid_width))     # number of grid column created
 
         # nanopattern ligand members
         self.ligand = []
-        for row in range(row_number):
-            for col in range(col_number):
+        for row in range(self.row_number):
+            for col in range(self.col_number):
                 for position in ligand_position:
                     self.ligand.append(Ligand((position[0] + col)*grid_width, (position[1] + row)*grid_height))
 
@@ -93,10 +94,6 @@ class Nanopattern():
         plt.xlim(0, self.width)
         plt.ylim(0, self.height)
     
-    
-
-
-
 class Integrin():
 # class to simulate integrin
 
@@ -145,9 +142,6 @@ class Integrin():
         self.y_target = 0              # y-position of the targeted object
         self.mass = 0                                   # integrin mass
     
-    def resetNumber():
-    # procedure to reset Integrin number
-        Integrin.integrin_number = 0
     
     def getInformation(self):
     # procedure to get integrin information 
@@ -188,6 +182,11 @@ class Integrin():
         for ligand in lst_of_ligands:      # search every ligand
             pass
         pass
+    
+    @classmethod
+    def resetNumber(cls):
+    # procedure to reset Integrin number
+        cls.integrin_number = 0
 
 class Cell():
 # class to simulate cell
@@ -205,15 +204,15 @@ class Cell():
         self.radius = max_radius                # the outer radius of the cell
         
         #cell integrin members
-        self.integrin = []                                                       # empty list for integrin                                                                # 
-        for i in range(int(total_integrin)):      
-            build_integrin = Integrin(Cell.cell_number, x_center, y_center, 
-                max_radius, integrin_size, self.integrin)                                                   
-            self.integrin.append(build_integrin)                                 # build the integrin
-
-    def resetNumber():
-    # procedure to reset cell number
-        Cell.cell_number = 0
+        self.integrin = []        
+        max_number = int(max_radius**2/(8*(integrin_size**2)))    
+        if total_integrin <= max_number:                                           # empty list for integrin                                                                # 
+            for i in range(int(total_integrin)):      
+                build_integrin = Integrin(Cell.cell_number, x_center, y_center, 
+                    max_radius, integrin_size, self.integrin)                                                   
+                self.integrin.append(build_integrin)                                 # build the integrin
+        else:
+            print(''.join(('maximum number integrin allowed is ', str(max_number))))
 
     def getIntegrinList(self):
     # get information of all integrins in the cell
@@ -248,6 +247,10 @@ class Cell():
         plt.xlim(0, substrate.width)
         plt.ylim(0, substrate.height)
 
+    @classmethod
+    def resetNumber(cls):
+    # procedure to reset cell number
+        cls.cell_number = 0
 
 def readFile(filename):
 # procedure to read input file
@@ -258,7 +261,7 @@ def readFile(filename):
             data_file = open('PATCON.txt', 'r', encoding='utf-8')    
             lst_strng = data_file.readlines()
             data_file.close()
-            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n'              
+            stripped_strng = filterElement(lst_strng)       # filter out the empty string and '\n'              
         except:
             stripped_strng = 'Error in opening PATCON file'    # error flag if PATCON can not be opened
         finally:
@@ -270,7 +273,7 @@ def readFile(filename):
             data_file = open('CELCON.txt', 'r', encoding = 'UTF-8')
             lst_strng = data_file.readlines()
             data_file.close()
-            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n' 
+            stripped_strng = filterElement(lst_strng)       # filter out the empty string and '\n' 
         except:
             stripped_strng = 'Error in opening CELCON file'    # error flag if CELCON can not be opened
         finally:
@@ -282,7 +285,7 @@ def readFile(filename):
             data_file = open('SIMCON.txt', 'r', encoding='utf-8')
             lst_strng = data_file.readlines()
             data_file.close()
-            stripped_strng = filter_element(lst_strng)       # filter out the empty string and '\n' 
+            stripped_strng = filterElement(lst_strng)       # filter out the empty string and '\n' 
         except:
             stripped_strng = 'Error in opening SIMCON file'    # error flag if SIMCON can not be opened
         finally:
@@ -292,7 +295,7 @@ def readFile(filename):
         print('File name is not correct')
         return 0
 
-def get_value(lst_strng: list, property_name: string):
+def getValue(lst_strng: list, property_name: string):
 # procedure to get the value of a property in CON file
     if property_name == 'LIGAND':                                       # get ligand position
         start_index = (lst_strng.index('#LIGAND') + 2)                  # start index to search
@@ -325,7 +328,7 @@ def get_value(lst_strng: list, property_name: string):
                 break
         return value                     
 
-def filter_element(input_lst):
+def filterElement(input_lst: list):
 # procedure to remove empty element in a list and remove the '\n' i
     new_lst = []
     for element in input_lst:
@@ -333,6 +336,28 @@ def filter_element(input_lst):
         if new_element:                         # check if the element is not empty
             new_lst.append(new_element)
     return new_lst
+
+def showAll(cells : List[Cell], substrate: Nanopattern, show_substrate=False):
+# procedure to show all element of simulation including cells and nanopattern
+    plt.figure(figsize=(20,20))
+    ax = plt.subplot(aspect='equal')
+
+    # print the cells
+    for cell in cells:
+        x_position = cell.getXPositionIntegrin()
+        y_position = cell.getYPositionIntegrin()
+        surface_circle = plt.Circle((cell.x_center_of_mass, cell.y_center_of_mass), 
+            cell.radius, color='black', fill=False, ls='--')
+        plt.gca().add_patch(surface_circle)
+        out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
+    
+    # print the nanopattern if the option is true
+    if show_substrate is True:
+        x_position = substrate.getXPositionLigand()
+        y_position = substrate.getYPositionLigand()
+        out = circles(x_position, y_position, substrate.dot_size, 'green', alpha=0.5, ec = 'none')
+    plt.xlim(0, substrate.width)
+    plt.ylim(0, substrate.height)
 
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     """

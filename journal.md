@@ -48,3 +48,11 @@ _TODO_: 1. draw for multi cell or many cell at once
 
 ### 20220616
 **0827**: Bismillah, starting early on. I need to finish the tasks at 23 june 2022. Hopefully i could make it in time. Right now i want to finish the class attribute to be submited to supervisor. 
+
+**0946**: finish creating flowchart for class attribute and method
+
+**1042**: After taking break, start to build the code again. Try to finish the TODO list in the last homework.
+
+**1130**: succesfully adding flag and limit so that the integrin in the cell will not be too much
+
+**1511**: succesfully implement the showAll() function so that the object can show all the cells and nanopattern (with an option for showing it or not)
