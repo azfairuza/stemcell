@@ -52,3 +52,17 @@ classDiagram
         resetNumber(cls)
         getInformation(self) string
     }
+    class Cell{
+        -float mass
+        -float x_center_of_mass
+        -float y_center_of mass
+        -float integrin_size
+        -float radius
+        -List~Integrin~ integrin
+        ~int cell_number
+        getIntegrinList(self) string
+        getXPositionIntegrin(self) List~float~
+        getYPositionIntegrin(self) List~float~
+        show(self, Nanopattern)
+        resetNumber(cls)
+    }
