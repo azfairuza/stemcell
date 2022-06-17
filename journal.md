@@ -56,3 +56,6 @@ _TODO_: 1. draw for multi cell or many cell at once
 **1130**: succesfully adding flag and limit so that the integrin in the cell will not be too much
 
 **1511**: succesfully implement the showAll() function so that the object can show all the cells and nanopattern (with an option for showing it or not)
+
+### 20220617
+**0940**: Bismillah, little bit late to start. Today i would like to finish the flowchart for simulation. After the flowchart has finished, i would show it to supervisors and create the code in the weekend. Ganbare!
