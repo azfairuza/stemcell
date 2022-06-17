@@ -4,15 +4,15 @@ This page contains the flowchart of the simulation. Because the main program has
 this flowchart will be the planned procedure for the future.
 
 
-This flowchart occurs after all the elements has created. The element are nanopattern (contains ligands) and 
+This flowchart occurs after all the elements has been created. The element are nanopattern (contains ligands) and 
 cells (contain integrins)
 
 ```mermaid
   flowchart TD
   %% components of the flowchart
   checkBounding1{does the distance </br> between integrin and target </br> is close enough?}
-  checkCell1{does all cell </br> have been picked?}
-  checkCell2{does all cell </br> have been updated?}
+  checkCell1{does all cells </br> have been picked?}
+  checkCell2{does all cells </br> have been updated?}
   checkDistance1{does the distance </br> more than the limit?}
   checkIntegrin1{does each integrin </br> in the cell  </br> have a target?}
   checkIntegrin2{does each integrin </br> in the cell  </br> have moved?}
@@ -26,6 +26,7 @@ cells (contain integrins)
   checkSurface{is the integrin </br> in the cell surface?}
   getLigand1[find nearest </br> untargeted ligand]
   getLigand2[find nearest </br> untargeted ligand]
+  iterate1{iterate again?}
   Move1[Move the integrin] 
   Start([Start]) 
   update1[update the attribute </br> of main integrin </br> and targeted object]
@@ -35,9 +36,9 @@ cells (contain integrins)
   
   
   %% relations of the flowchart
-  Start ----------> getCell1
   
   subgraph targetting
+  Start --> getCell1
   getCell1 --> getIntegrin1
   getIntegrin1 --> checkSurface
   checkSurface --> |Yes| getIntegrin2
@@ -66,8 +67,10 @@ cells (contain integrins)
   checkIntegrin2 --> |No| getIntegrin3
   checkIntegrin2 --> |Yes| checkCell2
   checkCell2 --> |No| getCell2
-
-  end
-  
-  
+  checkCell2 --> |Yes| iterate1
+  iterate1 --> |Yes| getCell2
+  iterate1 --> |No| End
+  end  
 ```
+
+These flowchart ia a simple mechanisme and has not include any law of physics
