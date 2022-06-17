@@ -61,3 +61,7 @@ _TODO_: 1. draw for multi cell or many cell at once
 **0940**: Bismillah, little bit late to start. Today i would like to finish the flowchart for simulation. After the flowchart has finished, i would show it to supervisors and create the code in the weekend. Ganbare!
 
 **1124**: Take a break. Jumatan. Have done adding subdiagram in the simulation flowchart. 
+
+**1700**: forget to timestamp the previous starting time of working, but i have finisihed the simulation flowchart and now waiting for the respond from supervisor. I also learned about unpacking operator `*` and unpacking dictionary operator `**` in python. I plan to use `*args` and `**kwargs` in my simulation function. 
+_TODO_: 1. build an option to save the diagram in every `show()` and `showAll()` function
+        2. build the simulation based on the flowchart that has been made in [simulation flow file](https://github.com/azfairuza/stem_cell/blob/master/simulationflow.md)
