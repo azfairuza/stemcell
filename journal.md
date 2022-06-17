@@ -59,3 +59,5 @@ _TODO_: 1. draw for multi cell or many cell at once
 
 ### 20220617
 **0940**: Bismillah, little bit late to start. Today i would like to finish the flowchart for simulation. After the flowchart has finished, i would show it to supervisors and create the code in the weekend. Ganbare!
+
+**1124**: Take a break. Jumatan. Have done adding subdiagram in the simulation flowchart. 
