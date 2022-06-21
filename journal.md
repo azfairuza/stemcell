@@ -65,3 +65,6 @@ _TODO_: 1. draw for multi cell or many cell at once
 **1700**: forget to timestamp the previous starting time of working, but i have finisihed the simulation flowchart and now waiting for the respond from supervisor. I also learned about unpacking operator `*` and unpacking dictionary operator `**` in python. I plan to use `*args` and `**kwargs` in my simulation function. 
 _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()` function
         2. build the simulation based on the flowchart that has been made in [simulation flow file](https://github.com/azfairuza/stem_cell/blob/master/simulationflow.md)
+
+### 20220621
+**1411**: Bismillah. After weekend break, today i start the work quite late because my motorbike got some trouble in the accu batery. Besides, my flowchart has been approved by supervisor, so this day i want to implement it into the code. Also i have some todo-list that need to be done. 
