@@ -4,11 +4,8 @@ title Simulasi Cell Spreading untuk jarak 100nm
 
 #CONFIG
 iteration 10
-timeStep 1
-forceRound 3
-interaction LJ-HLJ
+dstlimit 500
 savefig 1
-docmap 1
-interval 1
+savefolder test
 
 #END
