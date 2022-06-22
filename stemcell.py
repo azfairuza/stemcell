@@ -1,7 +1,6 @@
 #Author: azfairuza
 #email: fairuza.zacky1@gmail.com
 
-from ast import List
 from encodings import utf_8
 from random import uniform
 import string
@@ -9,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
+from typing import List
+from pathlib import Path
 
 class Ligand():
 # class for simulate ligand in nanopattern
@@ -82,10 +83,19 @@ class Nanopattern():
             position.append(ligand.y_position)
         return position
 
-    def show(self):
+    def show(self, save=False, number=0, folder=None):
     # Procedure to draw only nanopattern
+
+        if folder is None:
+            namefolder = './figure'
+        else:
+            namefolder = f'./figure/{folder}'
+        Path(namefolder).mkdir(parents=True, exist_ok=True)
         
-        plt.figure(figsize=(20, 20))
+        namefile = f'{namefolder}/{number:06}.jpg'
+        
+        fig = plt.figure(figsize=(20, 20))
+        fig.dpi = 200
         ax = plt.subplot(aspect='equal')
         x_position = self.getXPositionLigand()
         y_position = self.getYPositionLigand()
@@ -93,6 +103,11 @@ class Nanopattern():
         out = circles(x_position, y_position, self.dot_size, 'green', alpha=0.5, ec='none')
         plt.xlim(0, self.width)
         plt.ylim(0, self.height)
+
+        if save is True:
+            print(f'figure saved on {namefolder}')
+            fig.savefig(namefile, bbox_inches='tight', dpi=600)
+
     
 class Integrin():
 # class to simulate integrin
@@ -233,9 +248,19 @@ class Cell():
             position.append(integrin.y_position)
         return position
 
-    def show(self, substrate: Nanopattern):
+    def show(self, substrate: Nanopattern, save=False, number=0, folder=None):
     # procedure to draw only nanopattern
-        plt.figure(figsize=(20, 20))
+        
+        if folder is None:
+            namefolder = './figure'
+        else:
+            namefolder = f'./figure/{folder}'
+        Path(namefolder).mkdir(parents=True, exist_ok=True)
+        
+        namefile = f'{namefolder}/{number:06}.jpg'
+        
+        fig = plt.figure(figsize=(20, 20))
+        fig.dpi = 200
         ax = plt.subplot(aspect='equal')
         x_position = self.getXPositionIntegrin()                                        
         y_position = self.getYPositionIntegrin()
@@ -246,6 +271,10 @@ class Cell():
         out = circles(x_position, y_position, self.integrin_size, 'red', alpha=0.5, ec='none')
         plt.xlim(0, substrate.width)
         plt.ylim(0, substrate.height)
+
+        if save is True:
+            print(f'figure saved on {namefolder}')
+            fig.savefig(namefile, bbox_inches='tight', dpi=600)
 
     @classmethod
     def resetNumber(cls):
@@ -337,9 +366,20 @@ def filterElement(input_lst: list):
             new_lst.append(new_element)
     return new_lst
 
-def showAll(cells : List[Cell], substrate: Nanopattern, show_substrate=False):
+def showAll(cells : List[Cell], substrate: Nanopattern, 
+    show_substrate=False, save=False, number=0, folder=None):
 # procedure to show all element of simulation including cells and nanopattern
-    plt.figure(figsize=(20,20))
+    
+    if folder is None:
+        namefolder = './figure'
+    else:
+        namefolder = f'./figure/{folder}'
+    Path(namefolder).mkdir(parents=True, exist_ok=True)
+        
+    namefile = f'{namefolder}/{number:06}.jpg'
+    
+    fig = plt.figure(figsize=(20,20))
+    fig.dpi = 200
     ax = plt.subplot(aspect='equal')
 
     # print the cells
@@ -358,6 +398,13 @@ def showAll(cells : List[Cell], substrate: Nanopattern, show_substrate=False):
         out = circles(x_position, y_position, substrate.dot_size, 'green', alpha=0.5, ec = 'none')
     plt.xlim(0, substrate.width)
     plt.ylim(0, substrate.height)
+
+    if save is True:
+        print(f'figure saved on {namefolder}')
+        fig.savefig(namefile, bbox_inches='tight', dpi=600)
+
+def simulate1(cells: List[Cell], substrate: Nanopattern, n_iteration: int):
+    pass
 
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     """
