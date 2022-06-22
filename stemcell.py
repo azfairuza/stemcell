@@ -30,6 +30,22 @@ class Ligand():
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
     
+    def isTargetted(self):
+    # procedure to get targetted status
+        return self.targeted_status
+    
+    def getXpos(self):
+    # procedure to get X position
+        return self.x_position
+    
+    def getYpos(self):
+    # procedure to get Y position
+        return self.y_position
+    
+    def getId(self):
+    # procedure to get Id
+        return self.ligand_id
+
     @classmethod
     def resetNumber(cls):
     # procedure to reset ligand number
@@ -149,15 +165,27 @@ class Integrin():
 
         # bound properties
         self.bound_status = False      # False: integrin is not bounded to anyone
+        self.targeting_status = False  # False: integrin is not targetting to anyone
         self.object_type = 0           # 0: Empty ; 1: Ligand ; 2: Integrin
         self.cell_target_id = 0        # cell id number for integrin-integrin complex
         self.ligand_target_id = 0      # ligand id number for integrin-ligand complex 
         self.integrin_target_id = 0    # integrin id number for integrin-integrin complex
         self.x_target = 0              # x-position of the targeted object
         self.y_target = 0              # y-position of the targeted object
-        self.mass = 0                                   # integrin mass
+        self.mass = 0                  # integrin mass
     
+    def getXpos(self):
+    # procedure to get X position
+        return self.x_position
     
+    def getYpos(self):
+    # procedure to get Y position
+        return self.y_position
+    
+    def getId(self):
+    # procedure to get integrin id
+        return self.integrin_id
+
     def getInformation(self):
     # procedure to get integrin information 
         
@@ -183,20 +211,26 @@ class Integrin():
             # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: targeting integrin [cell_id*].[integrin_id*]
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
     
-    def getLigandDistance(self, ):
+    def getLigandDistance(self, ligand: Ligand):
     # procedure to get distance to a ligand
-        pass
+        return np.sqrt((self.getXpos() - ligand.getXpos())**2 + (self.getYpos() - ligand.getYpos())**2)
     
-    def getIntegrinDistance(self, self_cell, target_integrin, target_cell):
+    def getIntegrinDistance(self, target_integrin):
     # procedure to get distance to an integrin
-        pass
-
-    def searchNearestLigand(self, lst_of_ligands, distance):
+        return np.sqrt((self.getXpos() - target_integrin.getXpos())**2 + (self.getYpos() - target_integrin.getYpos())**2)
+    
+    def searchNearestLigand(self, lst_of_ligands: List[Ligand]):
     # procedure to get Nearest Ligand, returned in a list
     
         for ligand in lst_of_ligands:      # search every ligand
             pass
         pass
+    
+    def isSurface(self):
+        return self.surface
+    
+    def isTargetting(self):
+        return self.targeting_status
     
     @classmethod
     def resetNumber(cls):
@@ -217,6 +251,7 @@ class Cell():
         self.y_center_of_mass = y_center        # y position of the center of mass of the cell
         self.integrin_size = integrin_size      # the size of integrin
         self.radius = max_radius                # the outer radius of the cell
+        self.cell_id = Cell.cell_number         # cell_id
         
         #cell integrin members
         self.integrin = []        
@@ -247,6 +282,17 @@ class Cell():
         for integrin in self.integrin:
             position.append(integrin.y_position)
         return position
+
+    def getId(self):
+        return self.cell_id
+    
+    def getUntargetedIntegrin(self):
+        untargetted_integrin = []
+        for integrin in self.integrin:
+            if integrin.isTargetting():
+                pass
+            else:
+                untargetted_integrin.append(integrin)
 
     def show(self, substrate: Nanopattern, save=False, number=0, folder=None):
     # procedure to draw only nanopattern
@@ -403,9 +449,110 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
         print(f'figure saved on {namefolder}')
         fig.savefig(namefile, bbox_inches='tight', dpi=600)
 
-def simulate1(cells: List[Cell], substrate: Nanopattern, n_iteration: int):
-    pass
+def excludeCellById(cells: List[Cell], cell_id: int):
+    new_cells = []
+    for cell in cells:
+        if cell.getId() != cell_id:
+            new_cells.append(cell)
+    return new_cells
 
+def simulate1(cells: List[Cell], substrate: Nanopattern, n_iteration: int):
+# procedure to do simulation with single targetting    
+    iter_simulation = 0
+
+    # start the simulation
+    #Targetting
+    # pick a cell
+    for cell in cells:
+        #pick an integrin from the cell
+        for integrin in cell.integrin:
+            min_distance = None
+            target = None
+            if not integrin.isTargetting():
+                #check wether the integrin is in surface and also there are more than 1 cell
+                if integrin.isSurface() and len(cells) > 1:
+                    # get untargetted integrin from other cells
+                    cell_targets = excludeCellById(cells, cell.getId())
+                    for cell_target in cell_targets:
+                        for integrin_target in cell_target:
+                            # check whether the integrin has target
+                            if not integrin_target.isTargetting():
+                                if min_distance == None:
+                                    target = integrin_target
+                                    # update min_distance
+                                    min_distance = integrin.getIntegrinDistance(integrin_target)
+                                else:
+                                    dstnce = integrin.getIntegrinDistance(integrin_target)
+                                    if dstnce < min_distance:
+                                        target = integrin_target
+                                        # update min_distance
+                                        min_distance = dstnce
+                    # get untargetted ligand from nanopattern
+                    for ligand in substrate.ligand:
+                        # check whether the ligand has targetted
+                        if not ligand.isTargetted():
+                            if min_distance == None:
+                                target = ligand
+                                # update min_distance
+                                min_distance = integrin.getLigandDistance(ligand)
+                            else:
+                                dstnce = integrin.getIntegrinDistance(integrin_target)
+                                if dstnce < min_distance:
+                                    target = ligand
+                                    # update min_distance
+                                    min_distance = dstnce
+                else:
+                    # get untargetted ligand from nanopattern
+                    for ligand in substrate.ligand:
+                        # check whether the ligand has targetted
+                        if not ligand.isTargetted():
+                            if min_distance == None:
+                                target = ligand
+                                # update min_distance
+                                min_distance = integrin.getLigandDistance(ligand)
+                            else:
+                                dstnce = integrin.getIntegrinDistance(integrin_target)
+                                if dstnce < min_distance:
+                                    target = ligand
+                                    # update min_distance
+                                    min_distance = dstnce
+                # update the attribute
+                integrin.targetting_status = True
+                if type(target) is Ligand:
+                    # integrin
+                    integrin.object_type = 1                        # 0: Empty ; 1: Ligand ; 2: Integrin
+                    integrin.ligand_target_id = target.getId()
+                    integrin.x_target = target.getXpos()
+                    integrin.y_target = target.getYpos()
+
+                    # ligand target 
+                    target.targeted_status = True
+                    target.integrin_id = integrin.getId()
+
+                elif type(target) is Integrin:
+                    # integrin
+                    integrin.object_type = 2
+                    integrin.cell_target_id = target.cell_id
+                    integrin.integrin_target_id = target.getId()
+                    integrin.x_target = target.getXpos()
+                    integrin.y_target = target.getYpos()
+
+                    # integrin target
+                    target.targeting_status = True
+                    target.object_type = 2
+                    target.cell_target_id = integrin.cell_id
+                    target.integrin_target_id = integrin.getId()
+                    target.x_target = integrin.getXpos()
+                    target.y_target = integrin.getYpos()
+
+    # Moving
+    while(iter_simulation <= n_iteration): 
+        for cell in cells:
+            for integrin in cell.integrin:
+                pass
+    
+
+        
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     """
     Make a scatter of circles plot of x vs y, where x and y are sequence 
