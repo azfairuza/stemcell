@@ -68,3 +68,6 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 ### 20220621
 **1411**: Bismillah. After weekend break, today i start the work quite late because my motorbike got some trouble in the accu batery. Besides, my flowchart has been approved by supervisor, so this day i want to implement it into the code. Also i have some todo-list that need to be done. 
+
+### 20220622
+**0658**: Bismillah. As the lore said, indonesian people has quite good skill at building a thousand temple in just one night. So do I, insyaaAllah. haha. But, what it takes? I need to focus and do the work at maximum pace. Yesterday, i was forgotten to write the evening journal. I have done the `show()` function in nanopattern. Next, i want to upgrade the `show()` function in cell and `showAll()` function in general procedures. After that i can start building the simulation. 
