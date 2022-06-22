@@ -211,6 +211,9 @@ class Integrin():
             # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: targeting integrin [cell_id*].[integrin_id*]
                 return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: targeting integrin ', str(self.cell_target_id), '.', str(self.integrin_target_id), ' at (', str(self.x_target), ',', str(self.y_target), ')')))
     
+    def getTargetDistance(self):
+        return np.sqrt((self.x_position-self.x_target)**2 + (self.y_position-self.y_target)**2)
+
     def getLigandDistance(self, ligand: Ligand):
     # procedure to get distance to a ligand
         return np.sqrt((self.getXpos() - ligand.getXpos())**2 + (self.getYpos() - ligand.getYpos())**2)
@@ -219,18 +222,18 @@ class Integrin():
     # procedure to get distance to an integrin
         return np.sqrt((self.getXpos() - target_integrin.getXpos())**2 + (self.getYpos() - target_integrin.getYpos())**2)
     
-    def searchNearestLigand(self, lst_of_ligands: List[Ligand]):
-    # procedure to get Nearest Ligand, returned in a list
-    
-        for ligand in lst_of_ligands:      # search every ligand
-            pass
-        pass
-    
     def isSurface(self):
         return self.surface
     
     def isTargetting(self):
         return self.targeting_status
+    
+    def move(self, movespeed):
+        # find the angle
+        # do trigonometri on the movespeed
+        # update the x pos and y pos
+        pass
+
     
     @classmethod
     def resetNumber(cls):
@@ -456,7 +459,7 @@ def excludeCellById(cells: List[Cell], cell_id: int):
             new_cells.append(cell)
     return new_cells
 
-def simulate1(cells: List[Cell], substrate: Nanopattern, n_iteration: int):
+def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iteration: int = 1, movespeed: float=1):
 # procedure to do simulation with single targetting    
     iter_simulation = 0
 
@@ -549,7 +552,16 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, n_iteration: int):
     while(iter_simulation <= n_iteration): 
         for cell in cells:
             for integrin in cell.integrin:
-                pass
+                # add bound status to limit the move
+                if dstlimit > integrin.getTargetDistance():
+                    if integrin.getTargetDistance() < 2*cell.integrin_size:
+                        #update bound status
+                        pass
+                    else:
+                        integrin.move(movespeed)
+
+
+                
     
 
         
