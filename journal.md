@@ -73,3 +73,6 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 **0658**: Bismillah. As the lore said, indonesian people has quite good skill at building a thousand temple in just one night. So do I, insyaaAllah. haha. But, what it takes? I need to focus and do the work at maximum pace. Yesterday, i was forgotten to write the evening journal. I have done the `show()` function in nanopattern. Next, i want to upgrade the `show()` function in cell and `showAll()` function in general procedures. After that i can start building the simulation. 
 
 **1801**: finish working on the lab. I have been building the simulation procedure based on the flowchart that had been made. Currently, the simulation procedure is nearly finished as the update procedure and move procedure are not yet created. Hopefully this night, I can run the system and fix some bugs. 
+
+### 202220623
+**0713**: Bismillah. Times always moving, never stop nor slowing down. Today, i hope that i can run the program. If the program run smoothly, next thing to do is to generate the center of mass data for every cell. 
