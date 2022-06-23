@@ -76,3 +76,5 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 ### 202220623
 **0713**: Bismillah. Times always moving, never stop nor slowing down. Today, i hope that i can run the program. If the program run smoothly, next thing to do is to generate the center of mass data for every cell. 
+
+**1824**: Alhamdulillah, the program has been running. There are several bugs that i found and i have fixed it during the afternoon session. The simulate version 1 is 90% complete. Next, i need to write the report to my supervisor and also adding procedure to calculate the center of mass of the cell. After i got the data, i can plot it and look the distance. The hipothesis is the center of mass will be getting closer if there is integrin-integrin interaction.
