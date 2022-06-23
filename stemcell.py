@@ -29,6 +29,7 @@ class Ligand():
         self.targeted_status = False             # False: ligand is not targeted by any integrin
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
+        self.object_type = 'ligand'
     
     def isTargeted(self):
     # procedure to get targeted status
@@ -59,14 +60,15 @@ class Nanopattern():
     # inital procedure when creating a nanopattern
         
         # nanopattern properties
-        self.height = height                            # nanopattern height
-        self.width = width                              # nanopattern width
-        self.grid_height = grid_height                  # nanopattern grid height
-        self.grid_width = grid_width                    # nanopattern grid width
-        self.position_seed = ligand_position            # ligand position's list
-        self.dot_size = dot_size                        # ligand size (dot size in simulation)
+        self.height = height                                 # nanopattern height
+        self.width = width                                   # nanopattern width
+        self.grid_height = grid_height                       # nanopattern grid height
+        self.grid_width = grid_width                         # nanopattern grid width
+        self.position_seed = ligand_position                 # ligand position's list
+        self.dot_size = dot_size                             # ligand size (dot size in simulation)
         self.row_number = int(np.ceil(height/grid_height))   # number of grid row created
         self.col_number = int(np.ceil(width/grid_width))     # number of grid column created
+        self.object_type = 'nanopattern'
 
         # nanopattern ligand members
         self.ligand: List[Ligand] = []
@@ -208,7 +210,7 @@ class Integrin():
         else:
             if self.object_type == 0:
             # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: not bound
-                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: not bound')))
+                return(''.join(('integrin ', str(self.cell_id), '.', str(self.integrin_id), ': (', str(self.x_position), ',', str(self.y_position), ')', 'status: not targeting')))
             
             elif self.object_type == 1:
             # return: integrin [cell_id].[integrin_id]: ([x_integrin],[y_integrin]) status: targeting ligand [ligand_id] at ([x_ligand],[y_ligand])
@@ -239,15 +241,23 @@ class Integrin():
         return self.bound_status
     
     def move(self, movespeed):
-         # find the angle
+        # find the angle
         # do trigonometri on the movespeed
         # update the x pos and y pos
-        angle = np.arctan((self.y_target - self.y_position)/(self.x_target - self.y_target))
+        angle = np.arctan2((self.y_target - self.y_position), (self.x_target - self.x_position))
         dx = movespeed*np.cos(angle)
         dy = movespeed*np.sin(angle)
         self.x_position += dx
         self.y_position += dy
-
+    
+    def updateTarget(self, cells):
+        if self.object_type == 2:
+            cell_target = getCellbyId(cells, self.cell_target_id)
+            target = cell_target.getIntegrinById(self.integrin_target_id)
+            self.x_target = target.x_position
+            self.y_target = target.y_position
+        else: 
+            pass
     
     @classmethod
     def resetNumber(cls):
@@ -269,6 +279,7 @@ class Cell():
         self.integrin_size = integrin_size      # the size of integrin
         self.radius = max_radius                # the outer radius of the cell
         self.cell_id = Cell.cell_number         # cell_id
+        self.object_type = 'cell'
         
         #cell integrin members
         self.integrin: List[Integrin] = []        
@@ -313,7 +324,7 @@ class Cell():
     def getUntargetedIntegrin(self):
         untargeted_integrin: List[Integrin] = []
         for integrin in self.integrin:
-            if not integrin.isTargeting():
+            if integrin.targeting_status == False:
                 untargeted_integrin.append(integrin)
         return untargeted_integrin
 
@@ -443,7 +454,7 @@ def getCellbyId(cells: List[Cell], id):
             return cell
 
 def showAll(cells : List[Cell], substrate: Nanopattern, 
-    show_substrate=False, save=False, number=0, folder=None):
+    show_substrate=False, save=False, number=0, folder=None, line=False):
 # procedure to show all element of simulation including cells and nanopattern
     
     if folder is None:
@@ -460,6 +471,12 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
 
     # print the cells
     for cell in cells:
+        if line == True:
+            for integrin in cell.integrin:
+                if integrin.targeting_status:
+                    x = [integrin.x_position, integrin.x_target]
+                    y = [integrin.y_position, integrin.y_target]
+                    plt.plot(x, y, color="black", linewidth="1", linestyle="dashed")
         x_position = cell.getXPositionIntegrin()
         y_position = cell.getYPositionIntegrin()
         surface_circle = plt.Circle((cell.x_center_of_mass, cell.y_center_of_mass), 
@@ -472,11 +489,13 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
         x_position = substrate.getXPositionLigand()
         y_position = substrate.getYPositionLigand()
         out = circles(x_position, y_position, substrate.dot_size, 'green', alpha=0.5, ec = 'none')
+    
+    
     plt.xlim(0, substrate.width)
     plt.ylim(0, substrate.height)
 
     if save is True:
-        print(f'figure saved on {namefolder}')
+        print(f'figure {number:06}.jpg saved on {namefolder}')
         fig.savefig(namefile, bbox_inches='tight', dpi=600)
         plt.close()
 
@@ -487,7 +506,8 @@ def excludeCellById(cells: List[Cell], cell_id: int):
             new_cells.append(cell)
     return new_cells
 
-def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iteration: int=1, movespeed: float=1):
+def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, 
+    n_iteration: int=1, movespeed: float=1, line: bool=False):
 # procedure to do simulation with single targeting    
     iter_simulation = 0
 
@@ -497,109 +517,135 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iter
     for cell in cells:
         #pick an integrin from the cell
         for integrin in cell.integrin:
-            min_distance = None
+            min_distance = 0
             target = None
-            if not integrin.isTargeting():
+            if integrin.targeting_status == False:
                 #check wether the integrin is in surface and also there are more than 1 cell
-                if integrin.isSurface() and len(cells) > 1:
+                #print('integrin is not targeting')
+                if integrin.surface and len(cells) > 1:
                     # get untargeted integrin from other cells
+                    print(f'integrin {integrin.integrin_id} is in surface')
                     cell_targets = excludeCellById(cells, cell.getId())
                     for cell_target in cell_targets:
+                        print(f'cell id: {cell_target.cell_id}')
                         for integrin_target in cell_target.integrin:
                             # check whether the integrin has target
-                            if not integrin_target.isTargeting():
-                                if min_distance == None:
+                            if integrin_target.targeting_status == False:
+                                if target == None:
                                     target = integrin_target
                                     # update min_distance
                                     min_distance = integrin.getIntegrinDistance(integrin_target)
+                                    print(f'target is integrin with id {target.integrin_id}')
                                 else:
                                     dstnce = integrin.getIntegrinDistance(integrin_target)
                                     if dstnce < min_distance:
                                         target = integrin_target
                                         # update min_distance
                                         min_distance = dstnce
+                                        print(f'target is integrin with id {target.integrin_id}')
                     # get untargeted ligand from nanopattern
                     for ligand in substrate.ligand:
                         # check whether the ligand has targeted
-                        if not ligand.isTargeted():
-                            if min_distance == None:
+                        #print('checking ligands for surface integrin')
+                        if ligand.targeted_status == False:
+                            if target == None:
                                 target = ligand
                                 # update min_distance
                                 min_distance = integrin.getLigandDistance(ligand)
+                                print(f'target is ligand with id {target.ligand_id}')
                             else:
-                                dstnce = integrin.getIntegrinDistance(integrin_target)
+                                dstnce = integrin.getLigandDistance(ligand)
                                 if dstnce < min_distance:
                                     target = ligand
                                     # update min_distance
                                     min_distance = dstnce
+                                    print(f'target is ligand with id {target.ligand_id}')
                 else:
                     # get untargeted ligand from nanopattern
+                    print(f'finding ligand for non surface integrin {integrin.integrin_id}')
                     for ligand in substrate.ligand:
                         # check whether the ligand has targeted
-                        if not ligand.isTargeted():
-                            if min_distance == None:
+                        if ligand.targeted_status == False:
+                            if target == None:
                                 target = ligand
                                 # update min_distance
                                 min_distance = integrin.getLigandDistance(ligand)
+                                print(f'target is ligand with id {target.ligand_id}')
                             else:
-                                dstnce = integrin.getIntegrinDistance(integrin_target)
+                                dstnce = integrin.getLigandDistance(ligand)
                                 if dstnce < min_distance:
                                     target = ligand
                                     # update min_distance
                                     min_distance = dstnce
+                                    print(f'target is ligand with id {target.ligand_id}')
                 # update the attribute
-                integrin.targeting_status = True
-                if type(target) is Ligand:
-                    # integrin
-                    integrin.object_type = 1                        # 0: Empty ; 1: Ligand ; 2: Integrin
-                    integrin.ligand_target_id = target.getId()
-                    integrin.x_target = target.getXpos()
-                    integrin.y_target = target.getYpos()
+                #print(target.__dict__)
+                if target is not None:
+                    if target.object_type == 'ligand':
+                        print('update attribute due to ligand')
+                        # integrin
+                        integrin.targeting_status = True
+                        integrin.object_type = 1                        # 0: Empty ; 1: Ligand ; 2: Integrin
+                        integrin.ligand_target_id = target.getId()
+                        integrin.x_target = target.getXpos()
+                        integrin.y_target = target.getYpos()
 
-                    # ligand target 
-                    target.targeted_status = True
-                    target.integrin_id = integrin.getId()
+                        # ligand target 
+                        target.targeted_status = True
+                        target.integrin_id = integrin.getId()
 
-                elif type(target) is Integrin:
-                    # integrin
-                    integrin.object_type = 2
-                    integrin.cell_target_id = target.cell_id
-                    integrin.integrin_target_id = target.getId()
-                    integrin.x_target = target.getXpos()
-                    integrin.y_target = target.getYpos()
+                    else:
+                        print('update attribute due to integrin')
+                        # integrin
+                        integrin.targeting_status = True
+                        integrin.object_type = 2
+                        integrin.cell_target_id = target.cell_id
+                        integrin.integrin_target_id = target.getId()
+                        integrin.x_target = target.getXpos()
+                        integrin.y_target = target.getYpos()
 
-                    # integrin target
-                    target.targeting_status = True
-                    target.object_type = 2
-                    target.cell_target_id = integrin.cell_id
-                    target.integrin_target_id = integrin.getId()
-                    target.x_target = integrin.getXpos()
-                    target.y_target = integrin.getYpos()
+                        # integrin target
+                        target.targeting_status = True
+                        target.object_type = 2
+                        target.cell_target_id = integrin.cell_id
+                        target.integrin_target_id = integrin.getId()
+                        target.x_target = integrin.getXpos()
+                        target.y_target = integrin.getYpos()
+    #print('targeting is finished')
 
     # Moving
     while(iter_simulation <= n_iteration): 
         for cell in cells:
             for integrin in cell.integrin:
-                # check if the integrin is not bounded and the distance is below the limit
-                if (not integrin.isBound()) and (dstlimit > integrin.getTargetDistance()):
-                    # check if the integrin can bounded
-                    if integrin.getTargetDistance() < 2*cell.integrin_size:
-                        # update the bound status and mass of the integrin
-                        integrin.bound_status = True
-                        integrin.mass = 1
-                        if integrin.object_type == 1:
-                            # if the integrin bound to ligand
-                            target = substrate.getLigandById(integrin.ligand_target_id)
-                            target.bound_status = True
-                        elif integrin.object_type == 2:
-                            # if the integrin bound to another integrin
-                            cell_target = getCellbyId(cells, integrin.cell_target_id)
-                            integrin_target = cell_target.getIntegrinById(integrin.integrin_target_id)
-                            integrin_target.bound_status = True
-                            integrin_target.mass = 1
-                    else:
-                        integrin.move(movespeed)
-        showAll(cells, substrate, show_substrate=True, save=True, folder='simulation_output')
+                if integrin.targeting_status:
+                    # check if the integrin is not bounded and the distance is below the limit
+                    target_dst = integrin.getTargetDistance()
+                    #print(target_dst)
+                    if (integrin.bound_status == False) and (dstlimit > target_dst):
+                        # check if the integrin can bounded
+                        #print('integrin is not bound and below the distance limit')
+                        if target_dst < 2*cell.integrin_size:
+                            # update the bound status and mass of the integrin
+                            integrin.bound_status = True
+                            integrin.mass = 1
+                            #print('integrin is bound')
+                            if integrin.object_type == 1:
+                                # if the integrin bound to ligand
+                                target = substrate.getLigandById(integrin.ligand_target_id)
+                                target.bound_status = True
+                            elif integrin.object_type == 2:
+                                # if the integrin bound to another integrin
+                                cell_target = getCellbyId(cells, integrin.cell_target_id)
+                                integrin_target = cell_target.getIntegrinById(integrin.integrin_target_id)
+                                integrin_target.bound_status = True
+                                integrin_target.mass = 1
+                        else:
+                            #print('integrin moving')
+                            integrin.updateTarget(cells)
+                            integrin.move(movespeed)
+        showAll(cells, substrate, show_substrate=True, save=True, 
+            folder='simulation_output', number=iter_simulation, line=line)
+        iter_simulation += 1
 
 
                 
