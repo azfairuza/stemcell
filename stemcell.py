@@ -30,8 +30,8 @@ class Ligand():
         self.ligand_id = Ligand.ligand_number    # id number for ligand
         self.integrin_id = 0                     # id number for integrin connected to the ligand
     
-    def isTargetted(self):
-    # procedure to get targetted status
+    def isTargeted(self):
+    # procedure to get targeted status
         return self.targeted_status
     
     def getXpos(self):
@@ -69,7 +69,7 @@ class Nanopattern():
         self.col_number = int(np.ceil(width/grid_width))     # number of grid column created
 
         # nanopattern ligand members
-        self.ligand = []
+        self.ligand: List[Ligand] = []
         for row in range(self.row_number):
             for col in range(self.col_number):
                 for position in ligand_position:
@@ -98,6 +98,12 @@ class Nanopattern():
         for ligand in self.ligand:
             position.append(ligand.y_position)
         return position
+    
+    def getLigandById(self, id):
+    # Procedure to get a ligand by id
+        for ligand in self.ligand:
+            if ligand.getId() == id:
+                return ligand
 
     def show(self, save=False, number=0, folder=None):
     # Procedure to draw only nanopattern
@@ -123,6 +129,7 @@ class Nanopattern():
         if save is True:
             print(f'figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=600)
+            plt.close()
 
     
 class Integrin():
@@ -165,7 +172,7 @@ class Integrin():
 
         # bound properties
         self.bound_status = False      # False: integrin is not bounded to anyone
-        self.targeting_status = False  # False: integrin is not targetting to anyone
+        self.targeting_status = False  # False: integrin is not targeting to anyone
         self.object_type = 0           # 0: Empty ; 1: Ligand ; 2: Integrin
         self.cell_target_id = 0        # cell id number for integrin-integrin complex
         self.ligand_target_id = 0      # ligand id number for integrin-ligand complex 
@@ -225,14 +232,21 @@ class Integrin():
     def isSurface(self):
         return self.surface
     
-    def isTargetting(self):
+    def isTargeting(self):
         return self.targeting_status
     
+    def isBound(self):
+        return self.bound_status
+    
     def move(self, movespeed):
-        # find the angle
+         # find the angle
         # do trigonometri on the movespeed
         # update the x pos and y pos
-        pass
+        angle = np.arctan((self.y_target - self.y_position)/(self.x_target - self.y_target))
+        dx = movespeed*np.cos(angle)
+        dy = movespeed*np.sin(angle)
+        self.x_position += dx
+        self.y_position += dy
 
     
     @classmethod
@@ -257,7 +271,7 @@ class Cell():
         self.cell_id = Cell.cell_number         # cell_id
         
         #cell integrin members
-        self.integrin = []        
+        self.integrin: List[Integrin] = []        
         max_number = int(max_radius**2/(8*(integrin_size**2)))    
         if total_integrin <= max_number:                                           # empty list for integrin                                                                # 
             for i in range(int(total_integrin)):      
@@ -287,15 +301,21 @@ class Cell():
         return position
 
     def getId(self):
+    # procedure to get cell's Id
         return self.cell_id
     
-    def getUntargetedIntegrin(self):
-        untargetted_integrin = []
+    def getIntegrinById(self, id):
+    # procedure to get integrin by Id
         for integrin in self.integrin:
-            if integrin.isTargetting():
-                pass
-            else:
-                untargetted_integrin.append(integrin)
+            if integrin.getId() == id:
+                return integrin
+    
+    def getUntargetedIntegrin(self):
+        untargeted_integrin: List[Integrin] = []
+        for integrin in self.integrin:
+            if not integrin.isTargeting():
+                untargeted_integrin.append(integrin)
+        return untargeted_integrin
 
     def show(self, substrate: Nanopattern, save=False, number=0, folder=None):
     # procedure to draw only nanopattern
@@ -324,6 +344,7 @@ class Cell():
         if save is True:
             print(f'figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=600)
+            plt.close()
 
     @classmethod
     def resetNumber(cls):
@@ -415,6 +436,12 @@ def filterElement(input_lst: list):
             new_lst.append(new_element)
     return new_lst
 
+def getCellbyId(cells: List[Cell], id):
+# procedure to get cell by id
+    for cell in cells:
+        if cell.getId() == id:
+            return cell
+
 def showAll(cells : List[Cell], substrate: Nanopattern, 
     show_substrate=False, save=False, number=0, folder=None):
 # procedure to show all element of simulation including cells and nanopattern
@@ -451,35 +478,36 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
     if save is True:
         print(f'figure saved on {namefolder}')
         fig.savefig(namefile, bbox_inches='tight', dpi=600)
+        plt.close()
 
 def excludeCellById(cells: List[Cell], cell_id: int):
-    new_cells = []
+    new_cells: List[Cell] = []
     for cell in cells:
         if cell.getId() != cell_id:
             new_cells.append(cell)
     return new_cells
 
-def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iteration: int = 1, movespeed: float=1):
-# procedure to do simulation with single targetting    
+def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iteration: int=1, movespeed: float=1):
+# procedure to do simulation with single targeting    
     iter_simulation = 0
 
     # start the simulation
-    #Targetting
+    # Targeting
     # pick a cell
     for cell in cells:
         #pick an integrin from the cell
         for integrin in cell.integrin:
             min_distance = None
             target = None
-            if not integrin.isTargetting():
+            if not integrin.isTargeting():
                 #check wether the integrin is in surface and also there are more than 1 cell
                 if integrin.isSurface() and len(cells) > 1:
-                    # get untargetted integrin from other cells
+                    # get untargeted integrin from other cells
                     cell_targets = excludeCellById(cells, cell.getId())
                     for cell_target in cell_targets:
-                        for integrin_target in cell_target:
+                        for integrin_target in cell_target.integrin:
                             # check whether the integrin has target
-                            if not integrin_target.isTargetting():
+                            if not integrin_target.isTargeting():
                                 if min_distance == None:
                                     target = integrin_target
                                     # update min_distance
@@ -490,10 +518,10 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iter
                                         target = integrin_target
                                         # update min_distance
                                         min_distance = dstnce
-                    # get untargetted ligand from nanopattern
+                    # get untargeted ligand from nanopattern
                     for ligand in substrate.ligand:
-                        # check whether the ligand has targetted
-                        if not ligand.isTargetted():
+                        # check whether the ligand has targeted
+                        if not ligand.isTargeted():
                             if min_distance == None:
                                 target = ligand
                                 # update min_distance
@@ -505,10 +533,10 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iter
                                     # update min_distance
                                     min_distance = dstnce
                 else:
-                    # get untargetted ligand from nanopattern
+                    # get untargeted ligand from nanopattern
                     for ligand in substrate.ligand:
-                        # check whether the ligand has targetted
-                        if not ligand.isTargetted():
+                        # check whether the ligand has targeted
+                        if not ligand.isTargeted():
                             if min_distance == None:
                                 target = ligand
                                 # update min_distance
@@ -520,7 +548,7 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iter
                                     # update min_distance
                                     min_distance = dstnce
                 # update the attribute
-                integrin.targetting_status = True
+                integrin.targeting_status = True
                 if type(target) is Ligand:
                     # integrin
                     integrin.object_type = 1                        # 0: Empty ; 1: Ligand ; 2: Integrin
@@ -552,13 +580,26 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, n_iter
     while(iter_simulation <= n_iteration): 
         for cell in cells:
             for integrin in cell.integrin:
-                # add bound status to limit the move
-                if dstlimit > integrin.getTargetDistance():
+                # check if the integrin is not bounded and the distance is below the limit
+                if (not integrin.isBound()) and (dstlimit > integrin.getTargetDistance()):
+                    # check if the integrin can bounded
                     if integrin.getTargetDistance() < 2*cell.integrin_size:
-                        #update bound status
-                        pass
+                        # update the bound status and mass of the integrin
+                        integrin.bound_status = True
+                        integrin.mass = 1
+                        if integrin.object_type == 1:
+                            # if the integrin bound to ligand
+                            target = substrate.getLigandById(integrin.ligand_target_id)
+                            target.bound_status = True
+                        elif integrin.object_type == 2:
+                            # if the integrin bound to another integrin
+                            cell_target = getCellbyId(cells, integrin.cell_target_id)
+                            integrin_target = cell_target.getIntegrinById(integrin.integrin_target_id)
+                            integrin_target.bound_status = True
+                            integrin_target.mass = 1
                     else:
                         integrin.move(movespeed)
+        showAll(cells, substrate, show_substrate=True, save=True, folder='simulation_output')
 
 
                 
