@@ -78,3 +78,6 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 **0713**: Bismillah. Times always moving, never stop nor slowing down. Today, i hope that i can run the program. If the program run smoothly, next thing to do is to generate the center of mass data for every cell. 
 
 **1824**: Alhamdulillah, the program has been running. There are several bugs that i found and i have fixed it during the afternoon session. The simulate version 1 is 90% complete. Next, i need to write the report to my supervisor and also adding procedure to calculate the center of mass of the cell. After i got the data, i can plot it and look the distance. The hipothesis is the center of mass will be getting closer if there is integrin-integrin interaction.
+
+###20220624
+**0737**: Bismillah. Today i would like to take some data and making report to mya supervisor until before jummu'ah prayer. After that i would like to make second simulate flowchart that include competition between the ligand. Then if i still got time, i would like to reupdate the code into consistency especially building setter and getter. That is today goals.
