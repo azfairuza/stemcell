@@ -1,11 +1,16 @@
 #SIMCON
+
+#METADATA
 username Zacky Fairuza
 title Simulasi Cell Spreading untuk jarak 100nm
+date 2022-06-24
 
 #CONFIG
-iteration 10
-dstlimit 500
+iteration 5
+dstlimit 250
 savefig 1
-savefolder test
+movespeed 5
+line 0
+centerofmass 1
 
 #END
