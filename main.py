@@ -1,8 +1,19 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import stemcell as sc
 
+# read SIMCON.txt
 
+# open file
+simcon = sc.readFile('SIMCON')
+
+# get value
+iter_simulation = sc.getValue(simcon, 'iteration')
+dstlimit = sc.getValue(simcon, 'dstlimit')
+savefig = bool(sc.getValue(simcon, 'savefig'))
+movespeed = sc.getValue(simcon, 'movespeed')
+metadata = sc.getValue(simcon, 'METADATA')
+
+
+# Read PATCON.txt
 # open file
 patcon = sc.readFile('PATCON')
 
@@ -18,6 +29,8 @@ substrate = sc.Nanopattern(substrate_size[0], substrate_size[1], grid_size[0], g
 substrate.show(True, folder='nanopatern')
 
 print(sc.Ligand.ligand_number)
+
+#Read CELCON.txt
 
 # open file
 celcon = sc.readFile('CELCON')
@@ -44,7 +57,10 @@ for obj in cell_properties:
 
 #print cell and integrin counter
 
-sc.showAll(cells, substrate, show_substrate=True, save=True, folder='all', line=True)
+sc.showAll(cells, substrate, show_substrate=True, save=savefig, folder='all', line=True)
 
-sc.simulate1(cells, substrate, movespeed=5, dstlimit=250, n_iteration=50)
+
+# Simulate
+
+sc.simulate1(cells, substrate)
 
