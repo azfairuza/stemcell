@@ -117,9 +117,9 @@ class Nanopattern():
         '''
         # determine the name folder
         if folder is None:
-            namefolder = './figure'
+            namefolder = './output/figure'
         else:
-            namefolder = f'./figure/{folder}'
+            namefolder = f'./output/figure/{folder}'
         # build the folder
         Path(namefolder).mkdir(parents=True, exist_ok=True)
         # determine the file name
@@ -485,9 +485,9 @@ class Cell():
         '''        
         # determine the folder name
         if folder is None:
-            namefolder = './figure'
+            namefolder = './output/figure'
         else:
-            namefolder = f'./figure/{folder}'
+            namefolder = f'./output/figure/{folder}'
         # build the folder
         Path(namefolder).mkdir(parents=True, exist_ok=True)
         # determine the name of the file
@@ -509,6 +509,52 @@ class Cell():
             print(f'figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=200)
             plt.close()
+    
+    def getCenterofMass(self):
+        '''
+        procedure to get the center of mass of the cell
+        '''
+        # initiation
+        total_mass = 0
+        total_x_mass = 0
+        total_y_mass = 0
+        # calculate the mass of integrins
+        for integrin in self.integrins:
+            if integrin.bound == True:
+                total_mass += integrin.mass
+                total_x_mass += (integrin.mass*integrin.x_position)
+                total_y_mass += (integrin.mass*integrin.y_position)
+            else:
+                pass
+        # calculate the mass of cell
+        total_mass += self.mass
+        total_x_mass += (self.mass*self.x_center)
+        total_y_mass += (self.mass*self.y_center)
+        # get the center of mass
+        x_cm = round(total_x_mass/total_mass, 2)
+        y_cm = round(total_y_mass/total_mass, 2)
+        return (x_cm, y_cm)
+    
+    def totalIntegrinBound(self):
+        '''
+        Procedure to get the total of integrin bound.
+        '''
+        total_integrin = 0
+        for integrin in self.integrins:
+            if integrin.bound == True:
+                total_integrin += 1
+        return total_integrin
+    
+    def totalMass(self):
+        '''
+        Procedure to get total mass of the cell.
+        '''
+        total_mass = self.mass
+        for integrin in self.integrins:
+            total_mass += integrin.mass
+        return total_mass
+    
+    
 
     @classmethod
     def resetNumber(cls):
@@ -642,9 +688,9 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
     '''
     # determine the folder's name
     if folder is None:
-        namefolder = './figure'
+        namefolder = './output/figure'
     else:
-        namefolder = f'./figure/{folder}'
+        namefolder = f'./output/figure/{folder}'
     # build the folder
     Path(namefolder).mkdir(parents=True, exist_ok=True)
     # determine the file name        
@@ -690,11 +736,65 @@ def excludeCellById(cells: List[Cell], cell_id: int):
             new_cells.append(cell)
     return new_cells
 
-def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float, 
-    n_iteration: int=1, movespeed: float=1, line: bool=False):
+def saveCenterOfMass(cells: List[Cell], num_iteration):
+    namefolder = './output/file'
+    # build the folder
+    Path(namefolder).mkdir(parents=True, exist_ok=True)
+    # determine the name of the file
+    namefile = f'{namefolder}/CELLCM.txt'
+    if num_iteration <= 0:
+        head_text = 't\t'
+        for cell in cells:
+            head_cell = f'x{cell.id}\ty{cell.id}\tm{cell.id}\tn{cell.id}\t'
+            head_text += head_cell
+        head_text += '\n'
+        # save the data
+        with open(namefile, 'w') as output:
+            output.write(head_text)
+    output_text = f'{num_iteration}\t'
+    for cell in cells:
+        cm_position = cell.getCenterofMass()
+        mass = cell.totalMass()
+        integrin_bound = cell.totalIntegrinBound()
+        cell_output = f'{cm_position[0]}\t{cm_position[1]}\t{mass}\t{integrin_bound}\t'
+        output_text += cell_output
+    output_text += '\n'
+    # save the data
+    with open(namefile, 'a') as output:
+        output.write(output_text)
+        
+
+
+def simulate1(cells: List[Cell], substrate: Nanopattern):
     '''
     Procedure to do simulation with single targeting or first method.
     '''   
+
+    simcon = readFile('SIMCON')
+
+    # get value
+    n_iteration = int(getValue(simcon, 'iteration'))
+    print(f'iter {n_iteration}')
+    dstlimit = getValue(simcon, 'dstlimit')
+    print(f'dstlimit {dstlimit}')
+    movespeed = getValue(simcon, 'movespeed')
+    line = getValue(simcon, 'line')
+    savefig = getValue(simcon, 'savefig')
+    centerofmass = getValue(simcon, 'centerofmass')
+
+    if n_iteration == None:
+        n_iteration = 1
+    if dstlimit == None:
+        dstlimit = 1
+    if movespeed == None:
+        movespeed = 1
+    if line == None:
+        line = False
+    if savefig == None or savefig == 0:
+        savefig = False
+    else:
+        savefig = True
+
     iter_simulation = 0
     # start the simulation
     # Targeting
@@ -714,7 +814,9 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, dstlimit: float,
             for integrin in cell.integrins:
                 # move based on dstlimit, bound, and target
                 integrin.movingProcedure1(cells, substrate, dstlimit, movespeed)
-        showAll(cells, substrate, show_substrate=True, save=True, 
+        if centerofmass == 1:
+            saveCenterOfMass(cells, iter_simulation)
+        showAll(cells, substrate, show_substrate=True, save=savefig, 
             folder='simulation_output', number=iter_simulation, line=line)
         iter_simulation += 1
         
