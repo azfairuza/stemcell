@@ -79,5 +79,8 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 **1824**: Alhamdulillah, the program has been running. There are several bugs that i found and i have fixed it during the afternoon session. The simulate version 1 is 90% complete. Next, i need to write the report to my supervisor and also adding procedure to calculate the center of mass of the cell. After i got the data, i can plot it and look the distance. The hipothesis is the center of mass will be getting closer if there is integrin-integrin interaction.
 
-###20220624
+### 20220624
 **0737**: Bismillah. Today i would like to take some data and making report to mya supervisor until before jummu'ah prayer. After that i would like to make second simulate flowchart that include competition between the ligand. Then if i still got time, i would like to reupdate the code into consistency especially building setter and getter. That is today goals.
+
+### 20220627
+**1137**: Bismillah. Starting late today because i need to take finished laundry first. Today i would like to test my last program after updating several attributes' name and also i want to build flowchart for my second simulation procedure that containing competition between integrin. Also i want to make another class that called lattice which contain object so it can perform moore nearest neighbors. Also need to consider boundary effect as well but it will my next problem.
