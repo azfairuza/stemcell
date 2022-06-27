@@ -81,3 +81,6 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 ###20220624
 **0737**: Bismillah. Today i would like to take some data and making report to mya supervisor until before jummu'ah prayer. After that i would like to make second simulate flowchart that include competition between the ligand. Then if i still got time, i would like to reupdate the code into consistency especially building setter and getter. That is today goals.
+
+###20220627
+**1137**: Bismillah. Starting late today because i need to take finished laundry first. Today i would like to test my last program after updating several attributes' name and also i want to build flowchart for my second simulation procedure that containing competition between integrin. Also i want to make another class that called lattice which contain object so it can perform moore nearest neighbors. Also need to consider boundary effect as well but it will my next problem.
