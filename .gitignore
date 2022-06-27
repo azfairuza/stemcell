@@ -11,6 +11,7 @@ temp/
 #ignore pycache
 __pycache__
 *.pyc
+*.cfg
 
 
 #ignore folders
@@ -18,3 +19,8 @@ flowchart/
 old_file/
 figure/
 output/
+bin/
+include/
+lib/
+lib64/
+share/
