@@ -85,3 +85,46 @@ This procedure is named by simulation2. The differences is this procedure allow 
   4. The limit of surface can be set through celcon.txt
   5. Integrin who have not found any nearest object, will do random move. 
 
+```mermaid
+  flowchart TD
+  %% components of the flowchart
+  checkBound1{is the integrin </br> bound to another </br> object?}
+  checkNumberOfCell1{is the number if cell </br> is more than 1?}
+  checkSurface1{is the integrin </br> at surface?}
+  End([end])
+  findNearestIntegrin1[Find nearest </br> unbound-integrin </br> from other cell]
+  findNearestLigand1[Find nearest </br> unbound ligand]
+  foundTarget1[/Found a target/]
+  getCell1[Pick an unchoosen cell]
+  getIntegrin1[Pick an integrin </br> from the cell]
+  iterIntegrin1{Are all </br> of the integrin </br> picked?}
+  iterCell1{Are all </br> od the cell </br> picked?}
+  updateAttribute1[Update the integrin </br> and the target attribut]
+  
+  start([Start])
+  
+  %% diagram scheme
+  subgraph Targeting
+  start --> getCell1
+  getCell1 --> getIntegrin1
+  getIntegrin1 --> checkBound1
+  checkBound1 --> |YES| iterIntegrin1
+  checkBound1 --> |NO| checkNumberOfCell1
+  checkNumberOfCell1 --> |YES| checkSurface1
+  checkNumberOfCell1 --> |NO| findNearestLigand1
+  checkSurface1 --> |YES| findNearestIntegrin1
+  checkSurface1 --> |NO| findNearestLigand1
+  findNearestIntegrin1 --> foundTarget1
+  findNearestLigand1 --> foundTarget1
+  foundTarget1 --> updateAttribute1
+  updateAttribute1 --> iterIntegrin1
+  iterIntegrin1 --> |YES| iterCell1
+  iterIntegrin1 --> |NO| getIntegrin1
+  iterCell1 --> |YES| End
+  iterCell1 --> |NO| getCell1
+  
+  
+  
+  end
+```
+
