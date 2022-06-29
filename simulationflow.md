@@ -87,6 +87,7 @@ This procedure is named by simulation2. The differences is this procedure allow 
 
 ```mermaid
   flowchart TD
+  linkStyle default interpolate basis
   %% components of the flowchart
   bound1[/the integrin </br> bound to target/]
   checkBound1{is the integrin </br> bound to another </br> object?}
@@ -113,6 +114,7 @@ This procedure is named by simulation2. The differences is this procedure allow 
   targeting1[find a target </br> through targeting </br> procedure]
   updateAttribute1[Update the integrin </br> and the target attribut]
   updateAttribute2[Update the integrin </br> and the target attribut]
+  updatePosition1[Update target position <br> if it is integrin]
   validateTarget1{does the target </br> bound to </br> another object?}
   validateBound1{is the distance </br> close enough?}
   
@@ -126,9 +128,11 @@ This procedure is named by simulation2. The differences is this procedure allow 
     checkBound1 --> |YES| iterIntegrin1
     checkBound1 --> |NO| checkNumberOfCell1
     checkNumberOfCell1 --> |YES| checkSurface1
+    subgraph C [ ]
+      checkSurface1 --> |YES| findNearestIntegrin1
+      checkSurface1 --> |NO| findNearestLigand1
+    end
     checkNumberOfCell1 --> |NO| findNearestLigand1
-    checkSurface1 --> |YES| findNearestIntegrin1
-    checkSurface1 --> |NO| findNearestLigand1
     findNearestIntegrin1 --> foundTarget1
     findNearestLigand1 --> foundTarget1
     foundTarget1 --> updateAttribute1
@@ -145,13 +149,16 @@ This procedure is named by simulation2. The differences is this procedure allow 
     checkBound2 --> |NO| checkTarget1
     checkTarget1--> |YES| validateTarget1
     checkTarget1 --> |NO| targeting1
-    validateTarget1 --> |YES| removeTarget1
-    validateTarget1 --> |NO| moveIntegrin1
+    subgraph D [ ]
+      validateTarget1 --> |YES| removeTarget1
+      validateTarget1 --> |NO| updatePosition1
+      updatePosition1 --> moveIntegrin1
+    end
+    removeTarget1 --> targeting1
     moveIntegrin1 --> validateBound1
     validateBound1 --> |YES| bound1
     validateBound1 --> |NO| iterIntegrin2
     bound1 --> updateAttribute2
-    removeTarget1 --> targeting1
     targeting1 --> foundTarget2
     foundTarget2 --> updateAttribute2
     updateAttribute2 --> iterIntegrin2
