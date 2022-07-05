@@ -1,5 +1,8 @@
 import stemcell as sc
 
+#current running time
+current_time = sc.datetime.now()
+
 # read SIMCON.txt
 
 # open file
@@ -26,7 +29,7 @@ ligand_position = sc.getValue(patcon,'LIGAND')
 
 sc.Ligand.resetNumber()
 substrate = sc.Nanopattern(substrate_size[0], substrate_size[1], grid_size[0], grid_size[1], ligand_position, dot_size)
-substrate.show(True, folder='nanopatern')
+substrate.show(current_time, True, folder='nanopatern')
 
 print(sc.Ligand.ligand_number)
 
@@ -57,10 +60,10 @@ for obj in cell_properties:
 
 #print cell and integrin counter
 
-sc.showAll(cells, substrate, show_substrate=True, save=savefig, folder='all', line=True)
+sc.showAll(cells, substrate, current_time, show_substrate=True, save=savefig, folder='all', line=True)
 
 
 # Simulate
 
-sc.simulate1(cells, substrate)
+sc.simulate1(cells, substrate, current_time)
 

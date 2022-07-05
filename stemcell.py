@@ -4,14 +4,15 @@
 from __future__ import annotations
 from encodings import utf_8
 from random import uniform
+from typing import Dict, List
+from pathlib import Path
 import string
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
-from typing import Dict, List
-from pathlib import Path
-
+from scipy.spatial import ConvexHull, convex_hull_plot_2d
+from datetime import datetime
 
 class Ligand():
     '''
@@ -111,15 +112,15 @@ class Nanopattern():
             if ligand.id == id:
                 return ligand
 
-    def show(self, save=False, number=0, folder=None):
+    def show(self, time: datetime, save=False, number=0, folder=None):
         '''
         Procedure to draw only nanopattern.
         '''
         # determine the name folder
         if folder is None:
-            namefolder = './output/figure'
+            namefolder = f'./output/{getTime(time)}-output/figure'
         else:
-            namefolder = f'./output/figure/{folder}'
+            namefolder = f'./output/{getTime(time)}-output/figure/{folder}'
         # build the folder
         Path(namefolder).mkdir(parents=True, exist_ok=True)
         # determine the file name
@@ -479,15 +480,15 @@ class Cell():
                 available_integrin.append(integrin)
         return available_integrin
 
-    def show(self, substrate: Nanopattern, save=False, number=0, folder=None):
+    def show(self, time: datetime, substrate: Nanopattern, save=False, number=0, folder=None):
         '''
         Procedure to draw only nanopattern
         '''        
         # determine the folder name
         if folder is None:
-            namefolder = './output/figure'
+            namefolder = f'./output/{getTime(time)}-output/figure'
         else:
-            namefolder = f'./output/figure/{folder}'
+            namefolder = f'./output/{getTime(time)}-output/figure/{folder}'
         # build the folder
         Path(namefolder).mkdir(parents=True, exist_ok=True)
         # determine the name of the file
@@ -498,9 +499,17 @@ class Cell():
         ax = plt.subplot(aspect='equal')
         x_position = self.getXPositionIntegrin()                                        
         y_position = self.getYPositionIntegrin()
-        surface_circle = plt.Circle((self.x_center, self.y_center), 
-            self.radius, color='black', fill=False, ls='--')
-        plt.gca().add_patch(surface_circle)
+        listpoint =[]
+        for i in range(len(x_position)):
+            point = [round(x_position[i], 2), round(y_position[i],2)]
+            listpoint.append(point)
+        points =np.array(listpoint)
+        hull = ConvexHull(points)
+        for simplex in hull.simplices:
+            plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
+        # surface_circle = plt.Circle((self.x_center, self.y_center), 
+        #     self.radius, color='black', fill=False, ls='--')
+        # plt.gca().add_patch(surface_circle)
         out = circles(x_position, y_position, self.integrin_size, 'red', alpha=0.5, ec='none')
         plt.xlim(0, substrate.width)
         plt.ylim(0, substrate.height)
@@ -553,8 +562,6 @@ class Cell():
         for integrin in self.integrins:
             total_mass += integrin.mass
         return total_mass
-    
-    
 
     @classmethod
     def resetNumber(cls):
@@ -681,16 +688,16 @@ def getCellbyId(cells: List[Cell], id):
         if cell.id == id:
             return cell
 
-def showAll(cells : List[Cell], substrate: Nanopattern, 
+def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
     show_substrate=False, save=False, number=0, folder=None, line=False):
     '''
     Procedure to show all element of simulation including cells and nanopattern.
     '''
     # determine the folder's name
     if folder is None:
-        namefolder = './output/figure'
+        namefolder = f'./output/{getTime(time)}-output/figure'
     else:
-        namefolder = f'./output/figure/{folder}'
+        namefolder = f'./output/{getTime(time)}-output/figure/{folder}'
     # build the folder
     Path(namefolder).mkdir(parents=True, exist_ok=True)
     # determine the file name        
@@ -701,6 +708,7 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
     ax = plt.subplot(aspect='equal')
     # print the cells
     for cell in cells:
+        # draw line between cells
         if line == True:
             for integrin in cell.integrins:
                 if integrin.targeting:
@@ -709,9 +717,17 @@ def showAll(cells : List[Cell], substrate: Nanopattern,
                     plt.plot(x, y, color="black", linewidth="1", linestyle="dashed")
         x_position = cell.getXPositionIntegrin()
         y_position = cell.getYPositionIntegrin()
-        surface_circle = plt.Circle((cell.x_center, cell.y_center), 
-            cell.radius, color='black', fill=False, ls='--')
-        plt.gca().add_patch(surface_circle)
+        listpoint =[]
+        for i in range(len(x_position)):
+            point = [round(x_position[i], 2), round(y_position[i],2)]
+            listpoint.append(point)
+        points =np.array(listpoint)
+        hull = ConvexHull(points)
+        for simplex in hull.simplices:
+            plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
+        # surface_circle = plt.Circle((cell.x_center, cell.y_center), 
+        #     cell.radius, color='black', fill=False, ls='--')
+        # plt.gca().add_patch(surface_circle)
         out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
     # print the nanopattern if the option is true
     if show_substrate is True:
@@ -736,8 +752,9 @@ def excludeCellById(cells: List[Cell], cell_id: int):
             new_cells.append(cell)
     return new_cells
 
-def saveCenterOfMass(cells: List[Cell], num_iteration):
-    namefolder = './output/file'
+def saveCenterOfMass(cells: List[Cell], num_iteration, time: datetime):
+    
+    namefolder = f'./output/{getTime(time)}-output/file'
     # build the folder
     Path(namefolder).mkdir(parents=True, exist_ok=True)
     # determine the name of the file
@@ -765,7 +782,7 @@ def saveCenterOfMass(cells: List[Cell], num_iteration):
         
 
 
-def simulate1(cells: List[Cell], substrate: Nanopattern):
+def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
     '''
     Procedure to do simulation with single targeting or first method.
     '''   
@@ -815,11 +832,19 @@ def simulate1(cells: List[Cell], substrate: Nanopattern):
                 # move based on dstlimit, bound, and target
                 integrin.movingProcedure1(cells, substrate, dstlimit, movespeed)
         if centerofmass == 1:
-            saveCenterOfMass(cells, iter_simulation)
-        showAll(cells, substrate, show_substrate=True, save=savefig, 
+            saveCenterOfMass(cells, iter_simulation, time)
+        showAll(cells, substrate, time, show_substrate=True, save=savefig, 
             folder='simulation_output', number=iter_simulation, line=line)
         iter_simulation += 1
-        
+
+def getTime(time: datetime):
+    year = time.strftime('%Y')
+    month = time.strftime('%m')
+    day = time.strftime('%d')
+    hour = time.strftime('%H')
+    minute = time.strftime('%M')
+    return f'{year}-{month}-{day}-{hour}{minute}'
+
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     '''
     Make a scatter of circles plot of x vs y, where x and y are sequence 
