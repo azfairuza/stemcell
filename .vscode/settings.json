@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./lib"
+    ],
+    "python.analysis.autoImportCompletions":false
+}
