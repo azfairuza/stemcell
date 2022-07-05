@@ -13,6 +13,8 @@ __pycache__
 *.pyc
 *.cfg
 
+lib64
+
 
 #ignore folders
 flowchart/
@@ -22,5 +24,4 @@ output/
 bin/
 include/
 lib/
-lib64/
 share/
