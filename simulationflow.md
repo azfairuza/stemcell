@@ -96,7 +96,7 @@ This procedure is named by simulation2. The differences is this procedure allow 
   checkSurface1{is the integrin </br> at surface?}
   checkTarget1{does the integrin </br> have target?}
   End([end])
-  findNearestIntegrin1[Find nearest </br> unbound-integrin </br> from other cell]
+  findNearestIntegrin1[Find nearest </br> unbound-integrin </br> or unbound ligand </br> from other cell]
   findNearestLigand1[Find nearest </br> unbound ligand]
   foundTarget1[/Found a target/]
   foundTarget2[/Found a target/]
