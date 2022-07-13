@@ -14,6 +14,7 @@ dstlimit = sc.getValue(simcon, 'dstlimit')
 savefig = bool(sc.getValue(simcon, 'savefig'))
 movespeed = sc.getValue(simcon, 'movespeed')
 metadata = sc.getValue(simcon, 'METADATA')
+alphaValue = sc.getValue(simcon, 'alpha')
 
 
 # Read PATCON.txt
@@ -28,8 +29,8 @@ dot_size = sc.getValue(patcon, 'dotsize')
 ligand_position = sc.getValue(patcon,'LIGAND') 
 
 sc.Ligand.resetNumber()
-substrate = sc.Nanopattern(substrate_size[0], substrate_size[1], grid_size[0], grid_size[1], ligand_position, dot_size)
-substrate.show(current_time, True, folder='nanopatern')
+substrate = sc.Nanopattern(substrate_size[0], substrate_size[1], 
+    grid_size[0], grid_size[1], ligand_position, dot_size)
 
 print(sc.Ligand.ligand_number)
 
@@ -57,13 +58,10 @@ for obj in cell_properties:
     cells.append(build_cell)
     # build_cell.show(substrate)
 
-
-#print cell and integrin counter
-
-sc.showAll(cells, substrate, current_time, show_substrate=True, save=savefig, folder='all', line=True)
-
-
 # Simulate
 
-sc.simulate1(cells, substrate, current_time)
-
+sc.simulate2(cells, substrate, current_time)
+substrate.show(current_time, True, folder='nanopatern')
+sc.showAll(cells, substrate, current_time, alphaValue=alphaValue, 
+    show_substrate=True, save=savefig, folder='all', line=True)
+sc.saveInput(current_time)
