@@ -11,8 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
-from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from datetime import datetime
+from descartes import PolygonPatch
+import alphashape
+import shutil
 
 class Ligand():
     '''
@@ -22,7 +24,7 @@ class Ligand():
     # Class properties
     ligand_number = 0     #total ligand created
     
-    def __init__(self, x_position: float, y_position: float):
+    def __init__(self, x_position: float, y_position: float, dot_size):
         '''
         Initial procedure when creating a ligand.
         '''
@@ -36,7 +38,8 @@ class Ligand():
         self.targeted = False                   # False: ligand is not targeted by any integrin
         self.id = Ligand.ligand_number          # id number for ligand
         self.target_id = []                     # id number for integrin connected to the ligand
-        self.type_class = 'ligand'
+        self.type_class = 'ligand'              # class type
+        self.ligand_size = dot_size
 
     @classmethod
     def resetNumber(cls):
@@ -72,7 +75,8 @@ class Nanopattern():
         for row in range(self.row_number):
             for col in range(self.col_number):
                 for position in ligand_position:
-                    self.ligands.append(Ligand((position[0] + col)*grid_width, (position[1] + row)*grid_height))
+                    self.ligands.append(Ligand((position[0] + col)*grid_width, 
+                        (position[1] + row)*grid_height, dot_size))
 
         print('nanopattern has been created')
     
@@ -139,7 +143,6 @@ class Nanopattern():
             print(f'figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=200)
             plt.close()
-
     
 class Integrin():
     '''
@@ -175,6 +178,7 @@ class Integrin():
         self.x_target = None                        # x-position of the targeted object
         self.y_target = None                        # y-position of the targeted object
         self.mass = 0                               # integrin mass
+        self.integrin_size = integrin_size          # integrin_size
         
         # generate position
         while True:
@@ -195,7 +199,7 @@ class Integrin():
                 break
 
         # determine surface status
-        if radius >= 0.9*max_radius:
+        if radius >= 0*max_radius:
             self.surface = True        # definition: integrin is on the cell surface
         else:
             self.surface = False       # definition: integrin is in the inside of the cell
@@ -314,7 +318,7 @@ class Integrin():
 
                 # ligand target 
                 target.targeted = True
-                target.target_id.append(self.id)
+                target.target_id.append((self.cell_id, self.id))
 
             elif target.type_class == 'integrin':
                 # integrin
@@ -359,6 +363,8 @@ class Integrin():
                         # if the integrin bound to ligand
                         target = substrate.getLigandById(self.ligand_target_id)
                         target.bound = True
+                        target.target_id = []
+                        target.target_id.append((self.cell_id, self.id))
                     elif self.target_type == 'integrin':
                         # if the integrin bound to another integrin
                         cell_target = getCellbyId(cells, self.cell_target_id)
@@ -374,6 +380,175 @@ class Integrin():
         else:
             pass
     
+    def targetingProcedure2(self, cells: List[Cell], substrate: Nanopattern) -> Integrin | Ligand | None:
+        '''
+        Procedure to get target object for the ligand using second method. The second method is a method
+        that does allow an object to be multi-targeted, or targeted by many objects. This method 
+        will ensure that the target is the closest object possible. 
+        '''
+        min_distance = 0
+        target = None
+        if self.bound == False:
+                #check wether the integrin is in surface and also there are more than 1 cell
+                if self.surface and len(cells) > 1:
+                    # get untargeted integrin from other cells
+                    cell_targets = excludeCellById(cells, self.cell_id)
+                    for cell_target in cell_targets:
+                        for integrin_target in cell_target.integrins:
+                            # check whether the integrin has target
+                            if integrin_target.bound == False:
+                                if target == None:
+                                    target = integrin_target
+                                    # update min_distance
+                                    min_distance = self.getIntegrinDistance(integrin_target)
+                                else:
+                                    dstnce = self.getIntegrinDistance(integrin_target)
+                                    if dstnce < min_distance:
+                                        target = integrin_target
+                                        # update min_distance
+                                        min_distance = dstnce
+                    # get untargeted ligand from nanopattern
+                    for ligand in substrate.ligands:
+                        # check whether the ligand has targeted
+                        #print('checking ligands for surface integrin')
+                        if ligand.bound == False:
+                            if target == None:
+                                target = ligand
+                                # update min_distance
+                                min_distance = self.getLigandDistance(ligand)
+                            else:
+                                dstnce = self.getLigandDistance(ligand)
+                                if dstnce < min_distance:
+                                    target = ligand
+                                    # update min_distance
+                                    min_distance = dstnce
+                else:
+                    # get untargeted ligand from nanopattern
+                    for ligand in substrate.ligands:
+                        # check whether the ligand has targeted
+                        if ligand.bound == False:
+                            if target == None:
+                                target = ligand
+                                # update min_distance
+                                min_distance = self.getLigandDistance(ligand)
+                            else:
+                                dstnce = self.getLigandDistance(ligand)
+                                if dstnce < min_distance:
+                                    target = ligand
+                                    # update min_distance
+                                    min_distance = dstnce
+        return target
+    
+    def updatingProcedure2(self, target: Ligand | Integrin):
+        '''
+        Procedure to update the attribute of integrin after it get the target. The update is
+        happening on the target as well.
+        '''
+        if target is not None:
+            if target.type_class == 'ligand':
+                # integrin
+                self.targeting = True
+                self.target_type = 'ligand'                       
+                self.ligand_target_id = target.id
+                self.x_target = target.x_position
+                self.y_target = target.y_position
+
+                # ligand target 
+                target.targeted = True
+                target.target_id.append((self.cell_id, self.id))
+
+                #check bound
+                target_dst = self.getTargetDistance()
+                if target_dst < (self.integrin_size + target.ligand_size):
+                    self.bound = True
+                    target.bound = True
+                    target.target_id = []
+                    target.target_id.append((self.cell_id, self.id))
+
+
+            elif target.type_class == 'integrin':
+                # integrin
+                self.targeting = True
+                self.target_type = 'integrin'
+                self.cell_target_id = target.cell_id
+                self.integrin_target_id = target.id
+                self.x_target = target.x_position
+                self.y_target = target.y_position
+
+                #check bound
+                target_dst = self.getTargetDistance()
+                if target_dst < (self.integrin_size + target.integrin_size):
+                    self.bound = True
+                    target.bound = True
+                    target.target_type = 'integrin'
+                    target.cell_target_id = self.cell_id
+                    target.integrin_target_id = self.id
+                    target.x_target = self.x_position
+                    target.y_target = self.y_position
+                    self.mass = 1
+
+            else:
+                pass
+        else:
+            pass
+
+    
+    def movingProcedure2(self, cells: List[Cell], substrate: Nanopattern, dstlimit: float, movespeed=1):
+        '''
+        Procedure to move the integrin towards the target. If the distance is out of limit
+        the integrin can not be moved. Also, if the distance is close enough, binding can be 
+        formed between the integrin and the object. This moving object using mark II method
+        '''
+        
+        # check if the integrin is not bounded and the distance is below the limit
+        target_dst = self.getTargetDistance()
+        cell = getCellbyId(cells, self.cell_id)
+        if dstlimit > target_dst:
+            # check if the integrin can bounded
+            #print('integrin is not bound and below the distance limit')
+            if target_dst < 2*cell.integrin_size:
+                # update the bound status and mass of the integrin
+                self.bound = True
+                #print('integrin is bound')
+                if self.target_type == 'ligand':
+                    # if the integrin bound to ligand
+                    target = substrate.getLigandById(self.ligand_target_id)
+                    target.bound = True
+                    target.target_id = []
+                    target.target_id.append((self.cell_id, self.id))
+                elif self.target_type == 'integrin':
+                    # if the integrin bound to another integrin
+                    cell_target = getCellbyId(cells, self.cell_target_id)
+                    integrin_target = cell_target.getIntegrinById(self.integrin_target_id)
+                    integrin_target.bound = True
+                    integrin_target.mass = 1
+                    if integrin_target.target_type == 'ligand':
+                        integrin_target.ligand_target_id = None
+                    integrin_target.cell_target_id = self.cell_id
+                    integrin_target.integrin_target_id = self.id
+                    self.mass = 1
+            else:
+                #print('integrin moving')
+                self.updateTarget(cells)
+                self.move(movespeed)
+        else:
+            pass
+    def validateTarget2(self, cells: List[Cell], substrate: Nanopattern):
+        if self.target_type == 'ligand':
+            ligand_target = substrate.getLigandById(self.ligand_target_id)
+            if ligand_target.bound == True:
+                self.targeting = False
+                self.target_type = None
+                self.ligand_target_id = None
+        elif self.target_type == 'integrin':
+            cell_target = getCellbyId(cells, self.cell_target_id)
+            integrin_target = cell_target.getIntegrinById(self.integrin_target_id)
+            if integrin_target.bound == True:
+                self.targeting = False 
+                self.target_type = None
+                self.cell_target_id = None
+                self.integrin_target_id = None
+
     def move(self, movespeed=1):
         '''
         Procedure to update the position of integrin towards target.
@@ -425,6 +600,7 @@ class Cell():
         self.id = Cell.cell_number              # cell_id
         self.type_class = 'cell'                # class type
         self.integrins: List[Integrin] = []      # list of integrin
+        self.alpha_shape = None
 
 
         #cell integrin members       
@@ -480,7 +656,7 @@ class Cell():
                 available_integrin.append(integrin)
         return available_integrin
 
-    def show(self, time: datetime, substrate: Nanopattern, save=False, number=0, folder=None):
+    def show(self, time: datetime, substrate: Nanopattern, alphaValue=0, save=False, number=0, folder=None):
         '''
         Procedure to draw only nanopattern
         '''        
@@ -503,10 +679,12 @@ class Cell():
         for i in range(len(x_position)):
             point = [round(x_position[i], 2), round(y_position[i],2)]
             listpoint.append(point)
-        points =np.array(listpoint)
-        hull = ConvexHull(points)
-        for simplex in hull.simplices:
-            plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
+        self.alpha_shape = alphashape.alphashape(listpoint, alphaValue)
+        plt.gca().add_patch(PolygonPatch(self.alpha_shape, alpha=0.2))
+        # points =np.array(listpoint)
+        # hull = ConvexHull(points)
+        # for simplex in hull.simplices:
+        #     plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
         # surface_circle = plt.Circle((self.x_center, self.y_center), 
         #     self.radius, color='black', fill=False, ls='--')
         # plt.gca().add_patch(surface_circle)
@@ -680,6 +858,14 @@ def filterElement(input_lst: list):
             new_lst.append(new_element)
     return new_lst
 
+def saveInput(time: datetime):
+    namefolder = f'./output/{getTime(time)}-output/input'
+    Path(namefolder).mkdir(parents=True, exist_ok=True)
+    shutil.copy2('./PATCON.txt', namefolder)
+    shutil.copy2('./CELCON.txt', namefolder)
+    shutil.copy2('./SIMCON.txt', namefolder)
+    print('input file has been copied!')
+
 def getCellbyId(cells: List[Cell], id):
     '''
     Procedure to get cell by id.
@@ -689,7 +875,7 @@ def getCellbyId(cells: List[Cell], id):
             return cell
 
 def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
-    show_substrate=False, save=False, number=0, folder=None, line=False):
+    show_substrate=False, save=False, number=0, folder=None, line=False, alphaValue=0):
     '''
     Procedure to show all element of simulation including cells and nanopattern.
     '''
@@ -721,14 +907,23 @@ def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
         for i in range(len(x_position)):
             point = [round(x_position[i], 2), round(y_position[i],2)]
             listpoint.append(point)
-        points =np.array(listpoint)
-        hull = ConvexHull(points)
-        for simplex in hull.simplices:
-            plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
-        # surface_circle = plt.Circle((cell.x_center, cell.y_center), 
-        #     cell.radius, color='black', fill=False, ls='--')
-        # plt.gca().add_patch(surface_circle)
+        cell.alpha_shape = alphashape.alphashape(listpoint, alphaValue)
+        # print(f"cell {cell.id} area: {cell.alpha_shape.area}")
+        plt.gca().add_patch(PolygonPatch(cell.alpha_shape, alpha=0.2))
         out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
+        # if edge == 'ConvexHull':
+        #     points =np.array(listpoint)
+        #     hull = ConvexHull(points)
+        #     for simplex in hull.simplices:
+        #         plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
+        # elif edge == 'Circle':
+        #     surface_circle = plt.Circle((cell.x_center, cell.y_center), 
+        #         cell.radius, color='black', fill=False, ls='--')
+        #     plt.gca().add_patch(surface_circle)
+        # elif edge == 'AlphaShape':
+        #     alpha_shape = alphashape.alphashape(listpoint, 0.01)
+        #     plt.gca().add_patch(PolygonPatch(alpha_shape, alpha=0.2))
+        # out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
     # print the nanopattern if the option is true
     if show_substrate is True:
         x_position = substrate.getXPositionLigand()
@@ -736,6 +931,7 @@ def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
         out = circles(x_position, y_position, substrate.dot_size, 'green', alpha=0.5, ec = 'none')
     plt.xlim(0, substrate.width)
     plt.ylim(0, substrate.height)
+    plt.title(f"iteration = {number:06}")
     # save if necessary
     if save is True:
         print(f'figure {number:06}.jpg saved on {namefolder}')
@@ -779,8 +975,6 @@ def saveCenterOfMass(cells: List[Cell], num_iteration, time: datetime):
     # save the data
     with open(namefile, 'a') as output:
         output.write(output_text)
-        
-
 
 def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
     '''
@@ -798,6 +992,8 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
     line = getValue(simcon, 'line')
     savefig = getValue(simcon, 'savefig')
     centerofmass = getValue(simcon, 'centerofmass')
+    cellarea = getValue(simcon, 'cellarea')
+    alphaValue = getValue(simcon, 'alpha')
 
     if n_iteration == None:
         n_iteration = 1
@@ -831,10 +1027,97 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
             for integrin in cell.integrins:
                 # move based on dstlimit, bound, and target
                 integrin.movingProcedure1(cells, substrate, dstlimit, movespeed)
+        showAll(cells, substrate, time,
+            show_substrate=True, 
+            save=savefig, 
+            folder='simulation_output', 
+            number=iter_simulation, 
+            line=line, 
+            alphaValue=alphaValue)
+        
         if centerofmass == 1:
             saveCenterOfMass(cells, iter_simulation, time)
-        showAll(cells, substrate, time, show_substrate=True, save=savefig, 
-            folder='simulation_output', number=iter_simulation, line=line)
+        if cellarea == 1:
+            saveArea(cells, iter_simulation, time)
+    
+        iter_simulation += 1
+
+def simulate2(cells: List[Cell], substrate: Nanopattern, time: datetime):
+    '''
+    Procedure to do simulation with multi targeting method
+    '''   
+
+    simcon = readFile('SIMCON')
+
+    # get value
+    n_iteration = int(getValue(simcon, 'iteration'))
+    print(f'iter {n_iteration}')
+    dstlimit = getValue(simcon, 'dstlimit')
+    print(f'dstlimit {dstlimit}')
+    movespeed = getValue(simcon, 'movespeed')
+    line = getValue(simcon, 'line')
+    savefig = getValue(simcon, 'savefig')
+    centerofmass = getValue(simcon, 'centerofmass')
+    cellarea = getValue(simcon, 'cellarea')
+    alphaValue = getValue(simcon, 'alpha')
+
+    if n_iteration == None:
+        n_iteration = 1
+    if dstlimit == None:
+        dstlimit = 1
+    if movespeed == None:
+        movespeed = 1
+    if line == None:
+        line = False
+    if savefig == None or savefig == 0:
+        savefig = False
+    else:
+        savefig = True
+
+    iter_simulation = 0
+    # start the simulation
+    # Targeting
+    # pick a cell
+    for cell in cells:
+        #pick an integrin from the cell
+        for integrin in cell.integrins:
+            # get the target
+            target = integrin.targetingProcedure2(cells, substrate)
+            # update the data
+            integrin.updatingProcedure2(target)
+    # Moving
+    while(iter_simulation <= n_iteration): 
+        # pick a cell
+        for cell in cells:
+            # pick an integrin from the cell
+            for integrin in cell.integrins:
+                # move based on dstlimit, bound, and target
+                if integrin.bound == False:
+                    if integrin.targeting:
+                        integrin.validateTarget2(cells, substrate)
+                        if integrin.targeting == False:
+                            target = integrin.targetingProcedure2(cells, substrate)
+                            integrin.updatingProcedure2(target)
+                        else:
+                            integrin.movingProcedure2(cells, substrate, dstlimit, movespeed)
+                    else:
+                        target = integrin.targetingProcedure2(cells, substrate)
+                        integrin.updatingProcedure2(target)
+                else:
+                    pass
+        showAll(cells, substrate, time,
+            show_substrate=True, 
+            save=savefig, 
+            folder='simulation_output', 
+            number=iter_simulation, 
+            line=line, 
+            alphaValue=alphaValue)
+        
+        if centerofmass == 1:
+            saveCenterOfMass(cells, iter_simulation, time)
+        if cellarea == 1:
+            saveArea(cells, iter_simulation, time)
+    
         iter_simulation += 1
 
 def getTime(time: datetime):
@@ -844,6 +1127,31 @@ def getTime(time: datetime):
     hour = time.strftime('%H')
     minute = time.strftime('%M')
     return f'{year}-{month}-{day}-{hour}{minute}'
+
+def saveArea(cells: List[Cell], num_iteration, time):
+    namefolder = f'./output/{getTime(time)}-output/file'
+    # build the folder
+    Path(namefolder).mkdir(parents=True, exist_ok=True)
+    # determine the name of the file
+    namefile = f'{namefolder}/CELLAR.txt'
+    if num_iteration <= 0:
+        head_text = 't\t'
+        for cell in cells:
+            head_cell = f'A{cell.id}\t'
+            head_text += head_cell
+        head_text += '\n'
+        # save the data
+        with open(namefile, 'w') as output:
+            output.write(head_text)
+    output_text = f'{num_iteration}\t'
+    for cell in cells:
+        area = round(cell.alpha_shape.area, 2)
+        cell_output = f'{area}\t'
+        output_text += cell_output
+    output_text += '\n'
+    # save the data
+    with open(namefile, 'a') as output:
+        output.write(output_text)
 
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     '''
