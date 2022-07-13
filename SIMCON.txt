@@ -2,15 +2,17 @@
 
 #METADATA
 username Zacky Fairuza
-title Simulasi Cell Spreading untuk jarak 100nm
+title Simulasi Cell 
 date 2022-06-24
 
 #CONFIG
-iteration 5
-dstlimit 250
+iteration 50
+dstlimit 150
 savefig 1
 movespeed 5
 line 0
 centerofmass 1
+cellarea 1
+alpha 0.01
 
 #END
