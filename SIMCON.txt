@@ -3,14 +3,13 @@
 #METADATA
 username Zacky Fairuza
 title Simulasi Cell 
-date 2022-06-24
 
 #CONFIG
-iteration 50
+iteration 2
 dstlimit 150
 savefig 1
 movespeed 5
-line 0
+line 1
 centerofmass 1
 cellarea 1
 alpha 0.01
