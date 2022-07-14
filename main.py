@@ -1,19 +1,39 @@
 import stemcell as sc
+import warnings
+import sys
+from pathlib import Path
+
+
+warnings.filterwarnings("ignore", category=FutureWarning)
+current_time = sc.datetime.now()
+namefolder = f'./output/{sc.getTime(current_time)}-output/file'
+Path(namefolder).mkdir(parents=True, exist_ok=True)
+namefile = f'{namefolder}/SIMLOG.txt'
+log = open(namefile, 'w')
+sys.stdout = log
+
+print('==================================================================')
+print(f'Program made by\t: Achmad Zacky Fairuza')
+print(f'email\t\t: fairuza.zacky1@gmail.com')
+print(f'this program is still under development')
+print('==================================================================')
 
 #current running time
-current_time = sc.datetime.now()
+print(f'SYSTEM: Simulation is start \t: {current_time}')
 
 # read SIMCON.txt
 
 # open file
 simcon = sc.readFile('SIMCON')
+metadata = sc.getValue(simcon, 'METADATA')
+print(f'SYSTEM: simulation run by \t: {metadata["username"]}')
+print(f'SYSTEM: title of simulation\t: {metadata["title"]}')
 
 # get value
 iter_simulation = sc.getValue(simcon, 'iteration')
 dstlimit = sc.getValue(simcon, 'dstlimit')
 savefig = bool(sc.getValue(simcon, 'savefig'))
 movespeed = sc.getValue(simcon, 'movespeed')
-metadata = sc.getValue(simcon, 'METADATA')
 alphaValue = sc.getValue(simcon, 'alpha')
 
 
@@ -32,8 +52,6 @@ sc.Ligand.resetNumber()
 substrate = sc.Nanopattern(substrate_size[0], substrate_size[1], 
     grid_size[0], grid_size[1], ligand_position, dot_size)
 
-print(sc.Ligand.ligand_number)
-
 #Read CELCON.txt
 
 # open file
@@ -44,8 +62,6 @@ cell_number = sc.getValue(celcon, 'cellnumber')
 integrin_size = sc.getValue(celcon, 'ressize')
 integrin_mass = sc.getValue(celcon, 'resmass')
 cell_properties = sc.getValue(celcon, 'CELL')
-
-print(cell_properties)
 
 # reset the cell and integrin counter 
 sc.Integrin.resetNumber()
@@ -65,3 +81,6 @@ substrate.show(current_time, True, folder='nanopatern')
 sc.showAll(cells, substrate, current_time, alphaValue=alphaValue, 
     show_substrate=True, save=savefig, folder='all', line=True)
 sc.saveInput(current_time)
+
+print(f'SYSTEM: simulation done!')
+log.close()
