@@ -78,7 +78,7 @@ class Nanopattern():
                     self.ligands.append(Ligand((position[0] + col)*grid_width, 
                         (position[1] + row)*grid_height, dot_size))
 
-        print('nanopattern has been created')
+        print('SYSTEM: nanopattern has been created')
     
     def getNotTargetedLigand(self) -> List[Ligand]:
         '''
@@ -140,7 +140,7 @@ class Nanopattern():
         plt.ylim(0, self.height)
         # save the figure if necessary
         if save is True:
-            print(f'figure saved on {namefolder}')
+            print(f'SYSTEM: Nanopattern figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=200)
             plt.close()
     
@@ -273,7 +273,6 @@ class Integrin():
                     # get untargeted ligand from nanopattern
                     for ligand in substrate.ligands:
                         # check whether the ligand has targeted
-                        #print('checking ligands for surface integrin')
                         if ligand.targeted == False:
                             if target == None:
                                 target = ligand
@@ -353,12 +352,10 @@ class Integrin():
             cell = getCellbyId(cells, self.cell_id)
             if (self.bound == False) and (dstlimit > target_dst):
                 # check if the integrin can bounded
-                #print('integrin is not bound and below the distance limit')
                 if target_dst < 2*cell.integrin_size:
                     # update the bound status and mass of the integrin
                     self.bound = True
                     self.mass = 1
-                    #print('integrin is bound')
                     if self.target_type == 'ligand':
                         # if the integrin bound to ligand
                         target = substrate.getLigandById(self.ligand_target_id)
@@ -372,7 +369,6 @@ class Integrin():
                         integrin_target.bound = True
                         integrin_target.mass = 1
                 else:
-                    #print('integrin moving')
                     self.updateTarget(cells)
                     self.move(movespeed)
             else:
@@ -410,7 +406,6 @@ class Integrin():
                     # get untargeted ligand from nanopattern
                     for ligand in substrate.ligands:
                         # check whether the ligand has targeted
-                        #print('checking ligands for surface integrin')
                         if ligand.bound == False:
                             if target == None:
                                 target = ligand
@@ -505,11 +500,9 @@ class Integrin():
         cell = getCellbyId(cells, self.cell_id)
         if dstlimit > target_dst:
             # check if the integrin can bounded
-            #print('integrin is not bound and below the distance limit')
             if target_dst < 2*cell.integrin_size:
                 # update the bound status and mass of the integrin
                 self.bound = True
-                #print('integrin is bound')
                 if self.target_type == 'ligand':
                     # if the integrin bound to ligand
                     target = substrate.getLigandById(self.ligand_target_id)
@@ -528,7 +521,6 @@ class Integrin():
                     integrin_target.integrin_target_id = self.id
                     self.mass = 1
             else:
-                #print('integrin moving')
                 self.updateTarget(cells)
                 self.move(movespeed)
         else:
@@ -611,7 +603,7 @@ class Cell():
                     max_radius, integrin_size, self.integrins)                                                   
                 self.integrins.append(build_integrin)                                 # build the integrin
         else:
-            print(f'maximm number integrin allowed is {max_number}')
+            print(f'ERROR: maximum number integrin allowed is {max_number}')
 
     def getIntegrinInfo(self):
         '''
@@ -658,7 +650,7 @@ class Cell():
 
     def show(self, time: datetime, substrate: Nanopattern, alphaValue=0, save=False, number=0, folder=None):
         '''
-        Procedure to draw only nanopattern
+        Procedure to draw cell
         '''        
         # determine the folder name
         if folder is None:
@@ -693,7 +685,7 @@ class Cell():
         plt.ylim(0, substrate.height)
         # save figure if necessary
         if save is True:
-            print(f'figure saved on {namefolder}')
+            print(f'SYSTEM: Cell figure saved on {namefolder}')
             fig.savefig(namefile, bbox_inches='tight', dpi=200)
             plt.close()
     
@@ -792,7 +784,7 @@ def readFile(filename: string):
             return stripped_strng
 
     else:
-        print('File name is not correct')
+        print('ERROR: File name is not correct')
         return 0
 
 def getValue(lst_strng: list, property_name: string):
@@ -822,15 +814,13 @@ def getValue(lst_strng: list, property_name: string):
     elif property_name == 'METADATA':
         start_index = (lst_strng.index('#METADATA')+1)                  # start index to search
         end_index = lst_strng.index('#CONFIG')                          # last index to search
-        cell_properties = {'username': None, 'title': None, 'date': None }                                            # cell properties container
+        cell_properties = {'username': None, 'title': None }                                            # cell properties container
         for i in range(start_index, end_index):
             stringdata = lst_strng[i].split()                           
             if stringdata[0] == 'username':                             # user of the simulation
                 cell_properties['username'] = ' '.join(stringdata[1:])
             elif stringdata[0] == 'title':                              # the title of the simulation
                 cell_properties['title'] = ' '.join(stringdata[1:])
-            elif stringdata[0] == 'date':                               # simulation date
-                cell_properties['date'] = stringdata[1]
         return cell_properties
     else: 
         start_index = (lst_strng.index('#CONFIG') + 1)
@@ -864,7 +854,7 @@ def saveInput(time: datetime):
     shutil.copy2('./PATCON.txt', namefolder)
     shutil.copy2('./CELCON.txt', namefolder)
     shutil.copy2('./SIMCON.txt', namefolder)
-    print('input file has been copied!')
+    print(f'SYSTEM: input file has been copied on {namefolder}')
 
 def getCellbyId(cells: List[Cell], id):
     '''
@@ -908,23 +898,8 @@ def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
             point = [round(x_position[i], 2), round(y_position[i],2)]
             listpoint.append(point)
         cell.alpha_shape = alphashape.alphashape(listpoint, alphaValue)
-        # print(f"cell {cell.id} area: {cell.alpha_shape.area}")
         plt.gca().add_patch(PolygonPatch(cell.alpha_shape, alpha=0.2))
         out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
-        # if edge == 'ConvexHull':
-        #     points =np.array(listpoint)
-        #     hull = ConvexHull(points)
-        #     for simplex in hull.simplices:
-        #         plt.plot(points[simplex, 0], points[simplex, 1], linestyle='--', color='k', linewidth='2')
-        # elif edge == 'Circle':
-        #     surface_circle = plt.Circle((cell.x_center, cell.y_center), 
-        #         cell.radius, color='black', fill=False, ls='--')
-        #     plt.gca().add_patch(surface_circle)
-        # elif edge == 'AlphaShape':
-        #     alpha_shape = alphashape.alphashape(listpoint, 0.01)
-        #     plt.gca().add_patch(PolygonPatch(alpha_shape, alpha=0.2))
-        # out = circles(x_position, y_position, cell.integrin_size, 'red', alpha=0.5, ec='none')
-    # print the nanopattern if the option is true
     if show_substrate is True:
         x_position = substrate.getXPositionLigand()
         y_position = substrate.getYPositionLigand()
@@ -934,7 +909,7 @@ def showAll(cells : List[Cell], substrate: Nanopattern, time: datetime,
     plt.title(f"iteration = {number:06}")
     # save if necessary
     if save is True:
-        print(f'figure {number:06}.jpg saved on {namefolder}')
+        print(f'SYSTEM: figure {number:06}.jpg saved on {namefolder}')
         fig.savefig(namefile, bbox_inches='tight', dpi=200)
         plt.close()
 
@@ -975,6 +950,7 @@ def saveCenterOfMass(cells: List[Cell], num_iteration, time: datetime):
     # save the data
     with open(namefile, 'a') as output:
         output.write(output_text)
+    print(f'SYSTEM: CELLCM updated on {namefolder}')
 
 def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
     '''
@@ -985,9 +961,7 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
 
     # get value
     n_iteration = int(getValue(simcon, 'iteration'))
-    print(f'iter {n_iteration}')
     dstlimit = getValue(simcon, 'dstlimit')
-    print(f'dstlimit {dstlimit}')
     movespeed = getValue(simcon, 'movespeed')
     line = getValue(simcon, 'line')
     savefig = getValue(simcon, 'savefig')
@@ -1030,7 +1004,7 @@ def simulate1(cells: List[Cell], substrate: Nanopattern, time: datetime):
         showAll(cells, substrate, time,
             show_substrate=True, 
             save=savefig, 
-            folder='simulation_output', 
+            folder='simulate1', 
             number=iter_simulation, 
             line=line, 
             alphaValue=alphaValue)
@@ -1051,9 +1025,7 @@ def simulate2(cells: List[Cell], substrate: Nanopattern, time: datetime):
 
     # get value
     n_iteration = int(getValue(simcon, 'iteration'))
-    print(f'iter {n_iteration}')
     dstlimit = getValue(simcon, 'dstlimit')
-    print(f'dstlimit {dstlimit}')
     movespeed = getValue(simcon, 'movespeed')
     line = getValue(simcon, 'line')
     savefig = getValue(simcon, 'savefig')
@@ -1108,7 +1080,7 @@ def simulate2(cells: List[Cell], substrate: Nanopattern, time: datetime):
         showAll(cells, substrate, time,
             show_substrate=True, 
             save=savefig, 
-            folder='simulation_output', 
+            folder='simulate2', 
             number=iter_simulation, 
             line=line, 
             alphaValue=alphaValue)
@@ -1127,6 +1099,11 @@ def getTime(time: datetime):
     hour = time.strftime('%H')
     minute = time.strftime('%M')
     return f'{year}-{month}-{day}-{hour}{minute}'
+
+def buildLogFolder(time: datetime):
+    namefolder = f'./output/{getTime(time)}-ouput/file'
+    Path(namefolder).mkdir(parents=True, exist_ok=True)
+    
 
 def saveArea(cells: List[Cell], num_iteration, time):
     namefolder = f'./output/{getTime(time)}-output/file'
@@ -1152,6 +1129,7 @@ def saveArea(cells: List[Cell], num_iteration, time):
     # save the data
     with open(namefile, 'a') as output:
         output.write(output_text)
+    print(f'SYSTEM: CELLAR updated on {namefolder}')
 
 def circles(x, y, s, c='b', vmin=None, vmax=None, **kwargs):
     '''
