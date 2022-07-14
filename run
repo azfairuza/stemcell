@@ -1,0 +1,12 @@
+#!/bin/bash
+
+clear
+sleep 1.5
+echo "SYSTEM: STARTING THE SIMULATION"
+sleep 1.5
+echo "SYSTEM: RUNNING..." 
+sleep 1.5
+echo "SYSTEM: PLEASE WAIT..."
+python main.py
+echo "SYSTEM: SIMULATION DONE!"
+sleep 1
