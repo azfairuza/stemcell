@@ -14,7 +14,7 @@ sys.stdout = log
 
 print('==================================================================')
 print(f'Program made by\t: Achmad Zacky Fairuza')
-print(f'email\t\t: fairuza.zacky1@gmail.com')
+print(f'email\t\t\t: fairuza.zacky1@gmail.com')
 print(f'this program is still under development')
 print('==================================================================')
 
@@ -26,8 +26,8 @@ print(f'SYSTEM: Simulation is start \t: {current_time}')
 # open file
 simcon = sc.readFile('SIMCON')
 metadata = sc.getValue(simcon, 'METADATA')
-print(f'SYSTEM: simulation run by \t: {metadata["username"]}')
-print(f'SYSTEM: title of simulation\t: {metadata["title"]}')
+print(f'SYSTEM: simulation run by \t\t: {metadata["username"]}')
+print(f'SYSTEM: title of simulation\t\t: {metadata["title"]}')
 
 # get value
 iter_simulation = sc.getValue(simcon, 'iteration')
@@ -35,6 +35,8 @@ dstlimit = sc.getValue(simcon, 'dstlimit')
 savefig = bool(sc.getValue(simcon, 'savefig'))
 movespeed = sc.getValue(simcon, 'movespeed')
 alphaValue = sc.getValue(simcon, 'alpha')
+gif = sc.getValue(simcon, 'gif')
+savegap = sc.getValue(simcon, 'savegap')
 
 
 # Read PATCON.txt
@@ -81,6 +83,11 @@ substrate.show(current_time, True, folder='nanopatern')
 sc.showAll(cells, substrate, current_time, alphaValue=alphaValue, 
     show_substrate=True, save=savefig, folder='all', line=True)
 sc.saveInput(current_time)
+
+if gif == 1:
+    sc.buildGIF(current_time)
+    print(f'SYSTEM: GIF created!')
+sc.filterPicture(int(savegap), current_time)
 
 print(f'SYSTEM: simulation done!')
 log.close()
