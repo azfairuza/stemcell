@@ -15,6 +15,9 @@ from datetime import datetime
 from descartes import PolygonPatch
 import alphashape
 import shutil
+import os
+import imageio
+from PIL import Image
 
 class Ligand():
     '''
@@ -740,6 +743,27 @@ class Cell():
         '''
         cls.cell_number = 0
 
+def buildGIF(time: datetime):
+    image_dir = f'./output/{getTime(time)}-output/figure/simulate2'
+    gif_dir = f'./output/{getTime(time)}-output/figure/gif'
+    Path(gif_dir).mkdir(parents=True, exist_ok=True)
+    images = []
+    for namefile in sorted(os.listdir(image_dir)):
+        if namefile.endswith('.jpg'):
+            pathfile = os.path.join(image_dir, namefile)
+            images.append(Image.fromarray(imageio.imread(pathfile)).resize((1000,1000)))
+    pathgif = os.path.join(gif_dir, 'simulation.gif')
+    imageio.mimsave(pathgif, images, fps=5)
+
+def filterPicture(savegap: int, time: datetime):
+    image_dir = f'./output/{getTime(time)}-output/figure/simulate2'
+    number_file = len(os.listdir(image_dir))
+    for i in range(number_file-1):
+        if (i % savegap) != 0:
+            namefile = os.path.join(image_dir, f'{i:06}.jpg')
+            if os.path.isfile(namefile):
+                os.remove(namefile)
+    
 def readFile(filename: string):
     '''
     Procedure to read input file. There are three input file that can be read. 
