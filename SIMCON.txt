@@ -5,13 +5,15 @@ username Zacky Fairuza
 title Simulasi Cell 
 
 #CONFIG
-iteration 2
-dstlimit 150
+iteration 10
+dstlimit 50
 savefig 1
-movespeed 5
-line 1
+movespeed 1
+line 0
 centerofmass 1
 cellarea 1
 alpha 0.01
+gif 1
+savegap 3
 
 #END
