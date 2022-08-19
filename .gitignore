@@ -14,6 +14,7 @@ __pycache__
 *.cfg
 
 lib64
+try*
 
 
 #ignore folders
@@ -26,3 +27,6 @@ include/
 lib/
 share/
 input/
+input1/
+old_lib/
+
