@@ -74,6 +74,7 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 **1801**: finish working on the lab. I have been building the simulation procedure based on the flowchart that had been made. Currently, the simulation procedure is nearly finished as the update procedure and move procedure are not yet created. Hopefully this night, I can run the system and fix some bugs. 
 
+
 ### 202220623
 **0713**: Bismillah. Times always moving, never stop nor slowing down. Today, i hope that i can run the program. If the program run smoothly, next thing to do is to generate the center of mass data for every cell. 
 
@@ -84,3 +85,22 @@ _TODO_: 1. build an option to save the diagram in every `show()` and `showAll()`
 
 ### 20220627
 **1137**: Bismillah. Starting late today because i need to take finished laundry first. Today i would like to test my last program after updating several attributes' name and also i want to build flowchart for my second simulation procedure that containing competition between integrin. Also i want to make another class that called lattice which contain object so it can perform moore nearest neighbors. Also need to consider boundary effect as well but it will my next problem.
+
+### 20220723
+**1648**: Bismillah. Today i my mind feel so full. I am in the overthinking mode. As i had conversation last night with Mbak Fitri, i was told about the cell mechanisme and it makes me realize that my model is far from reality cell mechanism. I need to revise my algorithm tonight. It drives me crazy. hufft. This is the mechanism that i will implement:
+  1. Do targeting to all integrin
+  2. Extend the area, integrin have minimum distance with the cell's center of mass.
+  3. Extension area have "energy like credit" in which the energy will used everytime the integrin extending until it reach zero
+  4. Bound mechanisme is still working.
+  5. We can analyze with different nanopattern, we will get different expanding area.
+  6. After saturated, the cell will "move":
+     1. the core will decide the move direction based on average direction preference of the integrins in the cell
+     2. The integrin will do "protusion" (15 degree from the direction will move toward next ligand/other integrin) if the expansion is less than x%
+     3. "protusion" movement will occur only on non bound integrins
+     4. bound and other will still be happening
+     5. calculate the area expansion, if the area expansion reach x% or more, the cell will do "retraction"
+     6. "rectraction" will occur on the outer integrin in the cell in which have 165 degree from the "moving direction". if the integrin bound it will lose it's bound. "retraction" will pull the integrin toward the cell CM or core
+     7. recalculate the CM position by calculating the integrin position (all integrin have equal mass)
+     8. If there are integrin to close to the cm position, it should be pushed away
+  7. by using this algorithm it can be noticed that nanopattern can direct the cell movement (at least different nanopattern will result in different behaviour) and also we can found the contact inhibition movement
+  8. After migration completed, we can add cell division mechanisme using some percentage and telomere concept. 
