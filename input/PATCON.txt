@@ -1,0 +1,11 @@
+#PATTERN
+
+#CONFIG
+size 100 100
+ligandsize  0.25
+scale 1
+gridnum 10 10
+xdist 3 
+ydist 3 
+
+#END

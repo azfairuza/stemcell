@@ -1,0 +1,11 @@
+#CELCON
+
+#CONFIG
+ressize 0.25
+resmass 1 
+
+#CELL
+#x-pos      y-pos       radius      min_dist
+38.5        49.80       10          1.5
+61.5        50          10          1.5  
+#END

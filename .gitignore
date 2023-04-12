@@ -18,15 +18,12 @@ try*
 
 
 #ignore folders
-flowchart/
-old_file/
-figure/
 output/
 bin/
 include/
 lib/
-share/
-input/
-input1/
 old_lib/
+legacy/
+test/
+notes/
 
