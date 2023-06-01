@@ -1,21 +1,25 @@
+"""module to generate collection of circles on matplotlib"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 
 
-def circles(x, y, s, c="b", vmin=None, vmax=None, **kwargs):
+def circles(ax, x_pos, y_pos, radius, color="b", vmin=None, vmax=None, **kwargs):
     """
     Make a scatter of circles plot of x vs y, where x and y are sequence
     like objects of the same lengths. The size of circles are in data scale.
 
     Parameters
     ----------
-    x,y : scalar or array_like, shape (n, )
+    ax : the current axis
+        axis of matplotlib
+    x_pos,y_pos : scalar or array_like, shape (n, )
         Input data
-    s : scalar or array_like, shape (n, )
+    radius : scalar or array_like, shape (n, )
         Radius of circle in data unit.
-    c : color or sequence of color, optional, default : 'b'
+    color : color or sequence of color, optional, default : 'b'
         `c` can be a single color format string, or a sequence of color
         specifications of length `N`, or a sequence of `N` numbers to be
         mapped to colors using the `cmap` and `norm` specified via kwargs.
@@ -47,9 +51,9 @@ def circles(x, y, s, c="b", vmin=None, vmax=None, **kwargs):
     (http://opensource.org/licenses/BSD-3-Clause)
     """
 
-    if np.isscalar(c):
-        kwargs.setdefault("color", c)
-        c = None
+    if np.isscalar(color):
+        kwargs.setdefault("color", color)
+        color = None
     if "fc" in kwargs:
         kwargs.setdefault("facecolor", kwargs.pop("fc"))
     if "ec" in kwargs:
@@ -59,15 +63,17 @@ def circles(x, y, s, c="b", vmin=None, vmax=None, **kwargs):
     if "lw" in kwargs:
         kwargs.setdefault("linewidth", kwargs.pop("lw"))
 
-    patches = [Circle((x_, y_), s_) for x_, y_, s_ in np.broadcast(x, y, s)]
+    patches = [
+        Circle((x_, y_), s_) for x_, y_, s_ in np.broadcast(x_pos, y_pos, radius)
+    ]
     collection = PatchCollection(patches, **kwargs)
-    if c is not None:
-        collection.set_array(np.asarray(c))
+    if color is not None:
+        collection.set_array(np.asarray(color))
         collection.set_clim(vmin, vmax)
 
-    ax = plt.gca()
-    ax.add_collection(collection)
-    ax.autoscale_view()
-    if c is not None:
+    axis_ = ax
+    axis_.add_collection(collection)
+    axis_.autoscale_view()
+    if color is not None:
         plt.sci(collection)
     return collection

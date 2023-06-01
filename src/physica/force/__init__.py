@@ -1,15 +1,18 @@
+"""init file for force module"""
 
-from .force_gravity import force_gravity
-from .force_lennardjones import force_LJ_6_12, nearest_dist_LJ
-from .force_coulomb import force_coulomb
-from .force_general_gravity import force_general_gravity
-from .force_spring import force_spring
+from .force_gravity import gravity
+from .force_lennardjones import lj_6_12, nearest_dist_LJ
+from .force_coulomb import coulomb
+from .force_general_gravity import general_gravity
+from .force_spring import spring
+from .force_drag import drag
 
 __all__ = [
-    'force_gravity', 
-    'force_LJ_6_12', 
-    'force_coulomb', 
-    'force_general_gravity', 
-    'force_spring',
-    'nearest_dist_LJ'
-    ]
+    "gravity",
+    "lj_6_12",
+    "coulomb",
+    "general_gravity",
+    "spring",
+    "nearest_dist_LJ",
+    "drag"
+]

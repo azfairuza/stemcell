@@ -1,4 +1,7 @@
-def filterItem(input_lst: list):
+"""contain: filter_item"""
+
+
+def filter_item(input_lst: list):
     """procedure to remove empty item in a list and remove the '\n' character."""
     new_lst = []
     for item in input_lst:

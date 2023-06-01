@@ -6,6 +6,7 @@ construct an object.
 
 import numpy as np
 
+
 class ObjBase:
     """Purpose of this class is as follow:
 
@@ -13,30 +14,30 @@ class ObjBase:
 
     """
 
-    def __init__(self, x: float, y: float, id: int) -> None:
+    def __init__(self, x_poisition: float, y_position: float, id_: int) -> None:
         """initial function for Base class
 
         Parameters
         ----------
-        x: float
+        x_position: float
             x position of the object
-        y: float
+        y_position: float
             y position of the object
-        id: int
+        id_: int
             the identity number of the object
         """
-        self._position = np.array((x, y))
-        self._speed = np.array((0, 0), dtype=float)
+        self._position = np.array((x_poisition, y_position))
+        self._velocity = np.array((0, 0), dtype=float)
         self._acceleration = np.array((0, 0), dtype=float)
         self._force = np.array((0, 0), dtype=float)
-        self._id = id
+        self._id = id_
         self._mass = 1
         self._size = 1
         self._shape = "circle"
 
         # temporary
         self._temp_position = self._position
-        self._temp_speed = self._speed
+        self._temp_velocity = self._velocity
         self._temp_acceleration = self._acceleration
         self._temp_force = self._force
 
@@ -49,10 +50,10 @@ class ObjBase:
         of using this function.
         """
         self.acceleration = self.temp_acceleration
-        self.speed = self.temp_speed
+        self.velocity = self.temp_velocity
         self.position = self.temp_position
 
-    def getDistance(self, obj, bias=None):
+    def get_distance(self, obj, bias=None):
         """Get the distance from two objects.
 
         Parameters
@@ -66,10 +67,10 @@ class ObjBase:
         if isinstance(obj, ObjBase):
             if isinstance(bias, np.ndarray):
                 return np.linalg.norm(obj.position - (self.position + bias))
-            else:
-                return np.linalg.norm(obj.position - self.position)
+            return np.linalg.norm(obj.position - self.position)
+        return None
 
-    def getXDistance(self, obj, bias=0.0):
+    def get_x_distance(self, obj, bias=0.0):
         """Get the X distance from two objects.
 
         Parameters
@@ -80,9 +81,10 @@ class ObjBase:
             bias value to alter the x position of first object.
         """
         if isinstance(obj, ObjBase):
-            return obj.x - (self.x + bias)
+            return obj.x_position - (self.x_position + bias)
+        return None
 
-    def getYDistance(self, obj, bias=0.0):
+    def get_y_distance(self, obj, bias=0.0):
         """Get the Y distance from two objects
 
         Parameters
@@ -93,9 +95,10 @@ class ObjBase:
             bias value to alter the y position of first object.
         """
         if isinstance(obj, ObjBase):
-            return obj.y - (self.y + bias)
+            return obj.y_position - (self.y_position + bias)
+        return None
 
-    def getAngle(self, obj, bias=None):
+    def get_angle(self, obj, bias=None):
         """Get the angle of two object in respect with X-axis
 
         Parameters
@@ -112,35 +115,35 @@ class ObjBase:
         if isinstance(obj, ObjBase):
             if isinstance(bias, np.ndarray):
                 return np.arctan2(
-                    self.getYDistance(obj, bias[1]), self.getXDistance(obj, bias[0])
+                    self.get_y_distance(obj, bias[1]), self.get_x_distance(obj, bias[0])
                 )
-            else:
-                return np.arctan2(self.getYDistance(obj), self.getXDistance(obj))
+            return np.arctan2(self.get_y_distance(obj), self.get_x_distance(obj))
+        return None
 
     # endregion
 
     # region <Property>
     @property
-    def id(self):
+    def id_(self):
         """The identity number of the object."""
         return self._id
 
     @property
-    def x(self):
+    def x_position(self):
         """return the x axis position of the object."""
         return self._position[0]
 
-    @x.setter
-    def x(self, value: float):
+    @x_position.setter
+    def x_position(self, value: float):
         self._position[0] = value
 
     @property
-    def y(self):
+    def y_position(self):
         """return the y axis position of the object."""
         return self._position[1]
 
-    @y.setter
-    def y(self, value: float):
+    @y_position.setter
+    def y_position(self, value: float):
         self._position[1] = value
 
     @property
@@ -152,69 +155,57 @@ class ObjBase:
     def position(self, coord):
         if isinstance(coord, ObjBase):
             self._position = coord.position
-        elif (
-            isinstance(coord, tuple)
-            or isinstance(coord, list)
-            or isinstance(coord, np.ndarray)
-        ):
-            self.x = coord[0]
-            self.y = coord[1]
-        else:
-            return NotImplemented
+        elif isinstance(coord, (tuple, list, np.ndarray)):
+            self.x_position = coord[0]
+            self.y_position = coord[1]
 
     @property
-    def vx(self):
-        """return the x axis velocity of the object."""
-        return self._speed[0]
+    def x_velocity(self):
+        """return the x axis speed of the object."""
+        return self._velocity[0]
 
-    @vx.setter
-    def vx(self, value):
-        self._speed[0] = value
-
-    @property
-    def vy(self):
-        """return the y axis velocity of the object."""
-        return self._speed[1]
-
-    @vy.setter
-    def vy(self, value):
-        self._speed[1] = value
+    @x_velocity.setter
+    def x_velocity(self, value):
+        self._velocity[0] = value
 
     @property
-    def speed(self):
+    def y_velocity(self):
+        """return the y axis speed of the object."""
+        return self._velocity[1]
+
+    @y_velocity.setter
+    def y_velocity(self, value):
+        self._velocity[1] = value
+
+    @property
+    def velocity(self):
         """return the velocity (vx, vy) of the object."""
-        return self._speed
+        return self._velocity
 
-    @speed.setter
-    def speed(self, value):
+    @velocity.setter
+    def velocity(self, value):
         if isinstance(value, ObjBase):
-            self._speed = value.speed
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.vx = value[0]
-            self.vy = value[1]
-        else:
-            return NotImplemented
+            self._velocity = value.velocity
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.x_velocity = value[0]
+            self.y_velocity = value[1]
 
     @property
-    def ax(self):
+    def x_acceleration(self):
         """return the x axis acceleration of the object."""
         return self._acceleration[0]
 
-    @ax.setter
-    def ax(self, value):
+    @x_acceleration.setter
+    def x_acceleration(self, value):
         self._acceleration[0] = value
 
     @property
-    def ay(self):
+    def y_acceleration(self):
         """return the y axis acceleration of the object."""
         return self._acceleration[1]
 
-    @ay.setter
-    def ay(self, value):
+    @y_acceleration.setter
+    def y_acceleration(self, value):
         self._acceleration[1] = value
 
     @property
@@ -226,32 +217,26 @@ class ObjBase:
     def acceleration(self, value):
         if isinstance(value, ObjBase):
             self._acceleration = value.acceleration
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.ax = value[0]
-            self.ay = value[1]
-        else:
-            return NotImplemented
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.x_acceleration = value[0]
+            self.y_acceleration = value[1]
 
     @property
-    def fx(self):
+    def x_force(self):
         """return the x axis force acting on the object."""
         return self._force[0]
 
-    @fx.setter
-    def fx(self, value):
+    @x_force.setter
+    def x_force(self, value):
         self._force[0] = value
 
     @property
-    def fy(self):
+    def y_force(self):
         """return the y axis force acting on the object."""
         return self._force[1]
 
-    @fy.setter
-    def fy(self, value):
+    @y_force.setter
+    def y_force(self, value):
         self._force[1] = value
 
     @property
@@ -263,32 +248,26 @@ class ObjBase:
     def force(self, value):
         if isinstance(value, ObjBase):
             self._force = value.force
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.fx = value[0]
-            self.fy = value[1]
-        else:
-            return NotImplemented
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.x_force = value[0]
+            self.y_force = value[1]
 
     @property
-    def temp_x(self):
+    def temp_x_position(self):
         """return the temporary x position of the object."""
         return self._temp_position[0]
 
-    @temp_x.setter
-    def temp_x(self, value: float):
+    @temp_x_position.setter
+    def temp_x_position(self, value: float):
         self._temp_position[0] = value
 
     @property
-    def temp_y(self):
+    def temp_y_position(self):
         """return the temporary y position of the object."""
         return self._temp_position[1]
 
-    @temp_y.setter
-    def temp_y(self, value: float):
+    @temp_y_position.setter
+    def temp_y_position(self, value: float):
         self._temp_position[1] = value
 
     @property
@@ -298,69 +277,57 @@ class ObjBase:
 
     @temp_position.setter
     def temp_position(self, coord):
-        if (
-            isinstance(coord, tuple)
-            or isinstance(coord, list)
-            or isinstance(coord, np.ndarray)
-        ):
-            self.temp_x = coord[0]
-            self.temp_y = coord[1]
-        else:
-            return NotImplemented
+        if isinstance(coord, (tuple, list, np.ndarray)):
+            self.temp_x_position = coord[0]
+            self.temp_y_position = coord[1]
 
     @property
-    def temp_vx(self):
+    def temp_x_velocity(self):
         """return the temporary x component velocity of the object."""
-        return self._temp_speed[0]
+        return self._temp_velocity[0]
 
-    @temp_vx.setter
-    def temp_vx(self, value):
-        self._temp_speed[0] = value
+    @temp_x_velocity.setter
+    def temp_x_velocity(self, value):
+        self._temp_velocity[0] = value
 
     @property
-    def temp_vy(self):
+    def temp_y_velocity(self):
         """return the temporary y component velocity of the object."""
-        return self._temp_speed[1]
+        return self._temp_velocity[1]
 
-    @temp_vy.setter
-    def temp_vy(self, value):
-        self._temp_speed[1] = value
+    @temp_y_velocity.setter
+    def temp_y_velocity(self, value):
+        self._temp_velocity[1] = value
 
     @property
-    def temp_speed(self):
+    def temp_velocity(self):
         """return the temporary velocity of the object."""
-        return self._temp_speed
+        return self._temp_velocity
 
-    @temp_speed.setter
-    def temp_speed(self, value):
+    @temp_velocity.setter
+    def temp_velocity(self, value):
         if isinstance(value, ObjBase):
-            self._temp_speed = value.temp_speed
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.temp_vx = value[0]
-            self.emp_vy = value[1]
-        else:
-            return NotImplemented
+            self._temp_velocity = value.temp_velocity
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.temp_x_velocity = value[0]
+            self.temp_y_velocity = value[1]
 
     @property
-    def temp_ax(self):
+    def temp_x_acceleration(self):
         """return the temporary x component acceleration of the object."""
         return self._temp_acceleration[0]
 
-    @temp_ax.setter
-    def temp_ax(self, value):
+    @temp_x_acceleration.setter
+    def temp_x_acceleration(self, value):
         self._temp_acceleration[0] = value
 
     @property
-    def temp_ay(self):
+    def temp_y_acceleration(self):
         """return the temporary y component acceleration of the object."""
         return self._temp_acceleration[1]
 
-    @temp_ay.setter
-    def temp_ay(self, value):
+    @temp_y_acceleration.setter
+    def temp_y_acceleration(self, value):
         self._temp_acceleration[1] = value
 
     @property
@@ -372,36 +339,30 @@ class ObjBase:
     def temp_acceleration(self, value):
         if isinstance(value, ObjBase):
             self._temp_acceleration = value.temp_acceleration
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.temp_ax = value[0]
-            self.temp_ay = value[1]
-        else:
-            return NotImplemented
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.temp_x_acceleration = value[0]
+            self.temp_y_acceleration = value[1]
 
     @property
-    def temp_fx(self):
+    def temp_x_force(self):
         """return the temporary x component force acting on the
         object.
         """
         return self._temp_force[0]
 
-    @temp_fx.setter
-    def temp_fx(self, value):
+    @temp_x_force.setter
+    def temp_x_force(self, value):
         self._temp_force[0] = value
 
     @property
-    def temp_fy(self):
+    def temp_y_force(self):
         """return the temporary y component force acting on the
         object.
         """
         return self._temp_force[1]
 
-    @temp_fy.setter
-    def temp_fy(self, value):
+    @temp_y_force.setter
+    def temp_y_force(self, value):
         self._temp_force[1] = value
 
     @property
@@ -415,21 +376,15 @@ class ObjBase:
     def temp_force(self, value):
         if isinstance(value, ObjBase):
             self._temp_force = value.temp_force
-        elif (
-            isinstance(value, tuple)
-            or isinstance(value, list)
-            or isinstance(value, np.ndarray)
-        ):
-            self.temp_fx = value[0]
-            self.temp_fy = value[1]
-        else:
-            return NotImplemented
+        elif isinstance(value, (tuple, list, np.ndarray)):
+            self.temp_x_force = value[0]
+            self.temp_y_force = value[1]
 
     @property
     def size(self):
         """return the size of the object"""
         return self._size
-    
+
     @property
     def mass(self):
         """return the mass of the object"""

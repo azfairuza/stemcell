@@ -1,11 +1,11 @@
 #PATTERN
 
 #CONFIG
-size 100 100
+size 60 60
 ligandsize  0.25
-scale 1
+ligandmass 1
 gridnum 10 10
 xdist 3 
-ydist 3 
+ydist 3
 
 #END

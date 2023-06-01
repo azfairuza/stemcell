@@ -1,10 +1,16 @@
+"""module for contain other uncategorized methods"""
+
+# Third party module
 import numpy as np
-from ligand import Ligand
-from integrin import Integrin
+
+# local module
+import ligand
+import integrin
+
 
 def filter_by_dist(list_of_objects, max_dist, origin):
     """function to filter object base on maximum distance
-    
+
     Parameter
     --------
     list_of_object:
@@ -17,22 +23,23 @@ def filter_by_dist(list_of_objects, max_dist, origin):
     Return
     ------
     filtered list of objects
-    
+
     """
-    
+
     origin = np.array(origin)
-    if isinstance(list_of_objects[0], Ligand):
-        filtered1: list[Ligand] = []
-        for member in list_of_objects:
-            dist = np.linalg.norm(member.position - origin)
-            if dist < max_dist:
-                filtered1.append(member)
-        return filtered1
-    elif isinstance(list_of_objects[0], Integrin):
-        filtered2: list[Integrin] = []
-        for member in list_of_objects:
-            dist = np.linalg.norm(member.position - origin)
-            if dist < max_dist:
-                filtered2.append(member)
-        return filtered2
-    
+    if list_of_objects:
+        if isinstance(list_of_objects[0], ligand.Ligand):
+            filtered1: list[ligand.Ligand] = []
+            for member in list_of_objects:
+                dist = np.linalg.norm(member.position - origin)
+                if dist < max_dist:
+                    filtered1.append(member)
+            return filtered1
+        if isinstance(list_of_objects[0], integrin.Integrin):
+            filtered2: list[integrin.Integrin] = []
+            for member in list_of_objects:
+                dist = np.linalg.norm(member.position - origin)
+                if dist < max_dist:
+                    filtered2.append(member)
+            return filtered2
+    return []

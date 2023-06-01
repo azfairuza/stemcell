@@ -1,31 +1,34 @@
-import numpy as np
-from physica.constant import COULOMB_CONSTANT
+"""module for coulomb potential"""
 
-def pot_coulomb(charge_A, charge_B, position_A, position_B):
+import numpy as np
+from ..constant import COULOMB_CONSTANT
+
+
+def coulomb(charge_a, charge_b, position_a, position_b):
     """calculate the coulombic potential energy
-    
+
     Parameter
     --------
-    charge_A: float
+    charge_a: float
         the electronic charge of object A (in C)
-    charge_B: float
+    charge_b: float
         the electronic charge of object B (in C)
-    position_A: array_like
+    position_a: array_like
         The coordinate position of object A
-    position_B: array_like
+    position_b: array_like
         The coordinate position of object B
-    
+
     Return
     ------
     E = Kq1q2/r
-    
+
     Notes
     -----
     This function calculate the force acting on object B from
     object A. So the main reference is object A
     """
-    position_A = np.array(position_A)
-    position_B = np.array(position_B)
-    dist = np.linalg.norm((position_B - position_A))
-    energy = COULOMB_CONSTANT*charge_A*charge_B/dist
+    position_a = np.array(position_a)
+    position_b = np.array(position_b)
+    dist = np.linalg.norm((position_b - position_a))
+    energy = COULOMB_CONSTANT * charge_a * charge_b / dist
     return energy
