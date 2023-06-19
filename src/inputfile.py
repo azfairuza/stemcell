@@ -77,15 +77,18 @@ class Read:
         #         ligand_position.append(dot_position)
         #     return ligand_position
 
-        # xdist and ydits
+        # xdist and ydist
         if property_name in ("xdist", "ydist"):
             start_index = self.contents.index("#CONFIG") + 1
             end_index = self.contents.index("#END")
             value = None
             for i in range(start_index, end_index):
                 data = self.contents[i].split()
-                raw_value = data[1:]
-                value = [float(i) for i in raw_value]
+                if data[0] == property_name:
+                    print(f'{property_name} data: {data}')
+                    raw_value = data[1:]
+                    print(f'{property_name} raw value: {raw_value}')
+                    value = [float(i) for i in raw_value]
             return value
 
         # Cell
