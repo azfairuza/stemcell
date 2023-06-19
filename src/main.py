@@ -5,6 +5,9 @@ import sys
 from datetime import datetime
 from warnings import filterwarnings
 
+# add-ons import
+import numpy as np
+
 # local import
 import cell as cel
 import forces
@@ -54,6 +57,7 @@ DAMPING_COEFFICIENT = simcon.get("dampingcoeff")
 MIN_FORCE = simcon.get("minForce")
 VISCOSITY = simcon.get("viscosity")
 TIMESTEP = simcon.get("timestep")
+input_near_dist = simcon.get("neardist")
 
 
 # reset all the simulation dependent variables
@@ -64,8 +68,11 @@ ign.Integrin.reset_count()
 # create substrate and cells
 substrate = npt.Nanopattern()
 cells = cel.Cells()
-NEAR_DIST = psc.force.nearest_dist_LJ(EPSILON, cells.integrin_size, MIN_FORCE)
-
+calc_near_dist = psc.force.nearest_dist_LJ(EPSILON, cells.integrin_size, MIN_FORCE)
+if calc_near_dist > input_near_dist:
+    NEAR_DIST = input_near_dist
+else:
+    NEAR_DIST = calc_near_dist
 
 # change value into boolean or default value
 if SAVE_PATTERN_MAP:
@@ -79,6 +86,30 @@ for cell in cells.members:
 for cell in cells.members:
     for integrin_ in cell.integrins:
         integrin_.bonding()
+
+# Calculate potential energy
+for cell in cells.members:
+    if cells.many:
+        surface_integrin = cells.surface_integrins_target(cell, NEAR_DIST)
+    for integrin_ in cell.integrins:
+        if integrin_.issurface and cells.many:
+            nearest_surface_integrin = misc.filter_by_dist(
+                surface_integrin, NEAR_DIST, integrin_.position
+            )
+            integrin_._nearest = nearest_surface_integrin
+        else:
+            nearest_ligands = substrate.nearest(
+                integrin_.x_position, integrin_.y_position, NEAR_DIST
+            )
+            integrin_._nearest = nearest_ligands
+        integrin_._radar_radius = NEAR_DIST
+        integrin_.calc_potential(integrin_._nearest,
+                                cell.normal_length,
+                                SPRING_CONSTANT,
+                                EPSILON,
+                                integrin_.size
+                                )
+save.save(cells, time, timestep=TIMESTEP,data_type="CELLEN")
 
 # initiate the figure for plot
 fig_cell = plotter.init_figure()
@@ -112,8 +143,7 @@ if GET_CONTOUR:
         folder="newsimulate"
     )
 
-# save the cell energy and cell map
-save.save(cells, time, timestep=TIMESTEP,data_type="CELLEN")
+# save the cell map
 save.save(cells, time, timestep=TIMESTEP, data_type="CELMAP")
 save.save(cells, time, timestep=TIMESTEP, data_type="CELNBR")
 
@@ -130,8 +160,8 @@ while iter_simulation <= N_ITERATION:
     iter_simulation += 1
     print(f"SYSTEM: iteration number {iter_simulation}")
     for cell in cells.members:
-        if cells.many:
-            surface_integrin = cells.surface_integrins_target(cell, NEAR_DIST)
+        # if cells.many:
+        #     surface_integrin = cells.surface_integrins_target(cell, NEAR_DIST)
         for integrin_ in cell.integrins:
             if integrin_.bound is False:
                 # create the equation of motion (EOM)
@@ -139,15 +169,10 @@ while iter_simulation <= N_ITERATION:
                     # in this case the force acting on the integrin are:
                     # 1. nearest another surface integrin
                     # 2. neighboring integrin in the form of spring potential
-                    nearest_surface_integrin = misc.filter_by_dist(
-                        surface_integrin, NEAR_DIST, integrin_.position
-                    )
-                    integrin_._nearest = nearest_surface_integrin
-                    integrin_._radar_radius = NEAR_DIST
                     eom = lambda x, v: forces.total_force_1(
                         x,
                         v,
-                        nearest_surface_integrin,
+                        integrin_._nearest,
                         integrin_.neighbors,
                         cell.normal_length,
                         SPRING_CONSTANT,
@@ -156,27 +181,14 @@ while iter_simulation <= N_ITERATION:
                         EPSILON,
                         integrin_.size,
                         dim=2
-                    )
-                    integrin_.force = eom(integrin_.position, integrin_.velocity)
-                    integrin_.temp_position, integrin_.temp_velocity = psc.integration.eom_rungekutta(
-                        integrin_.position,
-                        integrin_.velocity,
-                        eom,
-                        integrin_.mass,
-                        TIMESTEP,
                     )
                 else:
                     # if only one cell exist, every integrin attracted to nearest ligand
                     # also if the integrin is not a surface it would be attracted to nearest ligand
-                    nearest_ligands = substrate.nearest(
-                        integrin_.x_position, integrin_.y_position, NEAR_DIST
-                    )
-                    integrin_._nearest = nearest_ligands
-                    integrin_._radar_radius = NEAR_DIST
                     eom = lambda x, v: forces.total_force_2(
                         x,
                         v,
-                        nearest_ligands,
+                        integrin_._nearest,
                         integrin_.neighbors,
                         cell.normal_length,
                         SPRING_CONSTANT,
@@ -186,27 +198,22 @@ while iter_simulation <= N_ITERATION:
                         integrin_.size,
                         dim=2
                     )
-                    integrin_.force = eom(integrin_.position, integrin_.velocity)
-                    integrin_.temp_position, integrin_.temp_velocity = psc.integration.eom_rungekutta(
-                        integrin_.position,
-                        integrin_.velocity,
-                        eom,
-                        integrin_.mass,
-                        TIMESTEP,
-                    )
+                integrin_.force = eom(integrin_.position, integrin_.velocity)
+                integrin_.temp_position, integrin_.temp_velocity = psc.integration.eom_rungekutta(
+                    integrin_.position,
+                    integrin_.velocity,
+                    eom,
+                    integrin_.mass,
+                    TIMESTEP,
+                )
     # Update all the cell
     for cell in cells.members:
         for integrin_ in cell.integrins:
             integrin_.update()
             cell.update_position()
-    for cell in cells.members:
-        for integrin_ in cell.integrins:
-            integrin_.update_target_bound(cells, substrate)
-    for cell in cells.members:
-        for integrin_ in cell.integrins:
-            integrin_.bonding()
-    
+
     # Calculate potential energy
+    energy_pot_init = []
     for cell in cells.members:
         if cells.many:
             surface_integrin = cells.surface_integrins_target(cell, NEAR_DIST)
@@ -215,22 +222,55 @@ while iter_simulation <= N_ITERATION:
                 nearest_surface_integrin = misc.filter_by_dist(
                     surface_integrin, NEAR_DIST, integrin_.position
                 )
-                integrin_.calc_potential(nearest_surface_integrin,
-                                        cell.normal_length,
-                                        SPRING_CONSTANT,
-                                        EPSILON,
-                                        integrin_.size
-                                        )
-            else:
+                integrin_._nearest = nearest_surface_integrin            
+            elif integrin_.bound is False:
                 nearest_ligands = substrate.nearest(
                     integrin_.x_position, integrin_.y_position, NEAR_DIST
                 )
-                integrin_.calc_potential(nearest_ligands,
+                integrin_._nearest = nearest_ligands
+            integrin_.calc_potential(integrin_._nearest,
+                                    cell.normal_length,
+                                    SPRING_CONSTANT,
+                                    EPSILON,
+                                    integrin_.size
+                                    )
+        energy_pot_init.append(cell.potential_energy)          
+    # save energy
+    save.save(cells, time, iter_simulation, timestep=TIMESTEP, data_type="CELLEN")
+    
+    for cell in cells.members:
+        for integrin_ in cell.integrins:
+            integrin_.update_target_bound(cells, substrate)
+    bonding_objects = []
+    for cell in cells.members:
+        for integrin_ in cell.integrins:
+            bonding_value = integrin_.bonding()
+            if bonding_value is True:
+                bonding_objects.append(integrin_.target)
+
+    if bonding_objects:
+        print('SYSTEM: bonding occur')
+        # Update nearest
+        energy_pot_final = []
+        for cell in cells.members:
+            for integrin_ in cell.integrins:
+                old_member_num = len(integrin_._nearest)
+                integrin_._nearest = [obj for obj in integrin_._nearest if obj not in bonding_objects]
+                new_member_num = len(integrin_._nearest)
+                if new_member_num < old_member_num:
+                    integrin_.calc_potential(integrin_._nearest,
                                         cell.normal_length,
                                         SPRING_CONSTANT,
                                         EPSILON,
                                         integrin_.size
-                                        )                
+                                        )   
+            energy_pot_final.append(cell.potential_energy)  
+        energy_pot_init = np.array(energy_pot_init)
+        energy_pot_final = np.array(energy_pot_final)
+        energy_pot_loss = energy_pot_final - energy_pot_init
+        # add the loss
+        for i in range(len(cells.members)):
+            cells.members[i]._energy_loss += energy_pot_loss[i]     
 
     # save the data
     if iter_simulation % SAVE_GAP == 0 or iter_simulation > N_ITERATION:
@@ -276,8 +316,7 @@ while iter_simulation <= N_ITERATION:
             save.save(substrate, time, iter_simulation, timestep=TIMESTEP, data_type="PATMAP")
 
     # endregion
-    # save energy
-    save.save(cells, time, iter_simulation, timestep=TIMESTEP, data_type="CELLEN")
+    
     if SHOW_PROGRESS:
         sys.stdout = ori
         print(f"\rprogress: [{percent_progress}%]", end="")
