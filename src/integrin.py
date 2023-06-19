@@ -132,8 +132,10 @@ class Integrin(psc.ObjBase):
                 self.target._temp_force = self.target._force
                 self.target._temp_position = self.target._position
                 self.target.target = self
-            else:
-                self.target = None
+                return True
+            self.target = None
+        return False
+                
     
     def calc_potential(self, 
                        nearest_obj, 
