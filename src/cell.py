@@ -68,6 +68,7 @@ class Cell:
             radius, self.x_position, self.y_position, self._min_dst
         )
         self._alpha_shape = None
+        self._energy_loss = 0.0
         # self._min_dst = 1.5*min_dst
 
     def _build(self, radius, x_position, y_position, grid_length):
@@ -352,8 +353,8 @@ class Cell:
         """
         energy = 0.0
         for integrin_ in self.integrins:
-            if not integrin_.bound:
-                energy = energy + integrin_.kinetic_energy
+            # if not integrin_.bound:
+            energy = energy + integrin_.kinetic_energy
         return energy
     
     @property
@@ -367,7 +368,7 @@ class Cell:
         energy = 0.0
         for integrin_ in self.integrins:
            energy = energy + integrin_._potential_energy
-        return energy
+        return energy - self._energy_loss
 
     @property
     def bonding_energy(self):
@@ -502,7 +503,7 @@ class Cells:
                 new_cells.append(cell)
         return Cells(new_cells)
 
-    def surface_integrins_target(self, cell: Cell, max_dist):
+    def surface_integrins_target(self, cell: Cell, max_dist, filter_bound: bool = True):
         """procedure to get the list of surface integrin of a
         'cell'.
 
@@ -530,9 +531,10 @@ class Cells:
                 if (dist - (cell.radius + obj.radius)) < max_dist:
                     surface_integrin += obj.surface_integrin
         # filter the integrin
-        for integrin_ in surface_integrin:
-            if integrin_.bound is True:
-                surface_integrin.remove(integrin_)
+        if filter_bound is True:
+            for integrin_ in surface_integrin:
+                if integrin_.bound is True:
+                    surface_integrin.remove(integrin_)
         return surface_integrin
 
     @property
