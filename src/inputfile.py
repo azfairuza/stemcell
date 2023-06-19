@@ -85,9 +85,7 @@ class Read:
             for i in range(start_index, end_index):
                 data = self.contents[i].split()
                 if data[0] == property_name:
-                    print(f'{property_name} data: {data}')
                     raw_value = data[1:]
-                    print(f'{property_name} raw value: {raw_value}')
                     value = [float(i) for i in raw_value]
             return value
 

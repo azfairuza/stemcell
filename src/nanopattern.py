@@ -109,7 +109,6 @@ class Nanopattern:
                 else:
                     ligand_.target = cells.get_integrin_by_id(ligand_.target_cell_id, ligand_.target_integrin_id)
 
-
     def build(self):
         """building the nanopattern from empty list of ligands
 
@@ -181,7 +180,7 @@ class Nanopattern:
                 return ligand
         return None
 
-    def nearest(self, x_position: float, y_position: float, radius):
+    def nearest(self, x_position: float, y_position: float, radius, filter_bound: bool=True):
         """Function to return list of nearest ligand from a position
 
         Parameters
@@ -195,8 +194,8 @@ class Nanopattern:
         """
 
         # Find the smallest kernel size needed
-        kernel_size_x = int(2 * radius / self.x_gridsize) + 2
-        kernel_size_y = int(2 * radius / self.y_gridsize) + 2
+        kernel_size_x = int(2 * radius / self.x_gridsize) + 4
+        kernel_size_y = int(2 * radius / self.y_gridsize) + 4
         # make sure the kernel size is odd
         if kernel_size_x % 2 == 0:
             kernel_size_x += 1
@@ -233,7 +232,10 @@ class Nanopattern:
                     x_grid_index = x_index + (j - mid_index_x)
                     y_grid_index = y_index + (i - mid_index_y)
                     for ligand_ in self._grid[y_grid_index][x_grid_index]:
-                        if ligand_.bound is False:
+                        if filter_bound is True:
+                            if ligand_.bound is False:
+                                container.append(ligand_)
+                        else:
                             container.append(ligand_)
         # filter again to make circle
         nearest_ligand = misc.filter_by_dist(container, radius, (x_position, y_position))
