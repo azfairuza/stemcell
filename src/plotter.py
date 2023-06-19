@@ -42,7 +42,8 @@ def show_all(
     showintegrin: bool = True,
     forcearrow: bool = False,
     line: bool = False,
-    showID: bool = False
+    showID: bool = False,
+    tracking: bool = False
 ):
     """Procedure to show all element of simulation including cells and
     nanopattern.
@@ -158,9 +159,8 @@ def show_all(
                     color="blue",
                     width=0.3,
                 )
-            tracking = False
             if tracking:
-                if integrin_.id_ == 8:
+                if integrin_.id_ == 145:
                     x_neighbor_pos = []
                     y_neighbor_pos = []
                     monitor = Circle(integrin_.position, integrin_.size, color="black")
@@ -230,7 +230,7 @@ def contour_plot(
         y_index = int(y_pos_list[i] // y_gap)
         fig_matrix[x_index][y_index] += 1
 
-    fig_matrix_blur = cv.GaussianBlur(fig_matrix, (9, 9), 0)
+    fig_matrix_blur = cv.GaussianBlur(fig_matrix, (7, 7), 0)
 
     # position = np.vstack([xx.ravel(), yy.ravel()])
     # values = np.vstack([x, y])
@@ -240,7 +240,7 @@ def contour_plot(
     axis.set_xlim(xmin, xmax)
     axis.set_ylim(ymin, ymax)
     cfset = axis.contourf(
-        xx_grid, yy_grid, fig_matrix_blur, cmap="inferno", vmin=0, vmax=1
+        xx_grid, yy_grid, fig_matrix_blur, cmap="turbo", vmin=0, vmax=0.5
     )
     # cset = fig.gca().contour(xx, yy, f, colors='k')
     # fig.gca().clabel(cset, inline=1, fontsize=10)
@@ -294,13 +294,14 @@ def plot_energy():
     potential_energy = []
     bonding_energy = []
     total_energy = []
-    for i in range(2, len(stripped_strng)):
+    for i in range(1, len(stripped_strng)):
         dummy = stripped_strng[i].split()
         counter.append(float(dummy[0]))
         kinetic_energy.append(float(dummy[1]))
         potential_energy.append(float(dummy[2]))
         bonding_energy.append(float(dummy[3]))
         total_energy.append(float(dummy[1]) + float(dummy[2]) + float(dummy[3]))
+        # total_energy.append(float(dummy[1]) + float(dummy[2]))
     fig = plt.figure()
     plt.plot(counter, kinetic_energy, label="EK")
     plt.plot(counter, potential_energy, label="EP")
