@@ -5,13 +5,13 @@ username Zacky Fairuza
 title Simulasi Cell
 
 #CONFIG
-iteration 40000
+iteration 1
 showintegrin 1
 centerofmass 0
 cellarea 1
 alpha 0.01
 savefig 1
-savegap 250
+savegap 1
 gif 0
 cellmaping 1
 patternmaping 1
@@ -20,11 +20,12 @@ contour 1
 showprogress 1
 
 #PHYSICS
-springconstant 1
+springconstant 0.4
 dampingcoeff 0
-viscosity 1
-epsilon 1
-minForce 10E-6
+viscosity 0.001
+epsilon 511
+minForce 0.000001
 timestep 0.005
+neardist 10
 
 #END
