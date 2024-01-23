@@ -64,7 +64,7 @@ class Cell:
         self._integrin_size = size
         self._integrin_mass = mass
         self._min_dst = min_dst
-        self._integrins: list[ign.Integrin] = self._build(
+        self._integrins: list[ign.Integrin] = self._build2(
             radius, self.x_position, self.y_position, self._min_dst
         )
         self._alpha_shape = None
@@ -104,8 +104,8 @@ class Cell:
         horizontal = 2 * radius * (1 + np.tan(theta))
 
         # create grid base as the minimum lattice
-        diag_index = int(np.floor(diagonal / grid_length)) + 1
-        hori_index = int(np.floor(horizontal / grid_length)) + 1
+        diag_index = int(np.floor(diagonal / grid_length)) + 2
+        hori_index = int(np.floor(horizontal / grid_length)) + 2
         grid: list[list[ign.Integrin]] = [
             [None for j in range(hori_index)] for i in range(diag_index)
         ]
@@ -153,11 +153,11 @@ class Cell:
                                 return False
                             return True
                         if codenum==2:
-                            if (i + 1 >= diag_index):
+                            if (i + 1 > diag_index):
                                 return False
                             return True                        
                         if codenum==3:
-                            if (j + 1 >= diag_index):
+                            if (j + 1 > diag_index):
                                 return False
                             return True
                         
@@ -175,6 +175,76 @@ class Cell:
                         obj.neighbors.append(grid[i + 1][j])
                     if check_grid(2) and check_grid(3) and grid[i + 1][j + 1] is not None:
                         obj.neighbors.append(grid[i + 1][j + 1])
+        return objs
+    
+    def _build2(self, radius, x_position, y_position, grid_length):
+        """a function to build the cell version 2.
+
+        Step:
+        	1. Buat semua integrin pada cell dengan cara tinjuan layer per layer.
+	        2. Setiap layer memiliki integrin dengan jarak i*d (I adalah nomor layer) dan sudut kelipatan pi/3
+	        3. Untuk setiap layer ke I, dari salah satu integrin dengan jarak i*d tersebut. Akan dikurangi i-1 kali untuk menemukan posisi integrin di sisi hexagon
+		        a. Integrin sudut 0, dari posisinya, x - n*d cos 60 dan y + n*d sin 60 untuk n dari 1 sampai i-1
+		        b. Integirn sudut 60  dari posisinya,  x - n*d dan y, untuk n dari 1 sampai i-1
+		        c. Integrin sudut 120 dari posisinya, x - n*d cos 60 dan y - n*d sin 60 untuk n dari 1 sampai i-1
+		        d. Integrin sudut 180 dari posisinya, x + n*d cos 60 dan y - n*d sin 60 untuk n dari 1 sampai i-1
+		        e. Integrin sudut 240 dari posisinya x + n*d dan y untuk n dari 1 sampai i-1
+		        f. Integrin sudut 300 dari posisinya x + n*d  cos 60 dan y + n*d sin 60 untuk n dari 1 sampai i-1
+	        4. Masukkan setiap integrin ke dalam sebuah list jika integrin masih berada pada radius cell
+	        5. Pengisian berhenti jika tidak ada integrin dalam satu layer tersebut yang berada pada radius cell
+	        6. Menentukan tetangga dengan prinsip slicing, dan mencari seluruh integrin tetangga berjadak d.
+	        7. List depan selalu berisi integrin dengan layer awal (layer dalam) dan setiap layer akan di mulai dari sudut paling rendah ke sudut besar.
+	        8. Misal dari integrin awal list[x] yang ada di pusat, dia akan mencari tetangga dengan mengechek setiap interin dari list[x+1:]. 
+	        9. Jika sudah mendapat 6 tetangga atau sudah mencari seluruh integrin maka lanjut ke integrin [x+1] dengan mengecheck integrin dari list [x+2:] dst.
+	        10. Hingga integrin yang dicheck merupakan integrin ke n-1 dengan mengecheck integrin ke n. 
+	        11. setelah itu kemungkinan semua integrin telah memiliki tetangga maksimum 6 buah. 
+
+
+        Parameters
+        ----------
+        x_position: float
+            the x position of cell center of mass.
+        y_position: float
+            the y position of cell center of mass.
+        grid_length: float
+            the dist between integrins. The integrins is spread in
+            the hexagonal pattern.
+
+        """
+        objs = []
+        create_integrin = True
+        # build integrin on the center
+        layer_lvl = 0
+        objs.append(ign.Integrin(self, x_position, y_position))
+        print("Cell is build using build2 module")
+        
+        # build per layer
+        while(create_integrin):
+            create_integrin = False
+            layer_lvl += 1
+            print(f"layer_lvl : {layer_lvl}")
+            total_integrin_spot = 6*layer_lvl
+            layer_distance = layer_lvl*grid_length
+            for i in range(total_integrin_spot):
+                theta = (2*np.pi*i)/total_integrin_spot
+                #SAS triangle
+                side_A = layer_distance
+                side_B = layer_distance*((theta % (np.pi/3))/(np.pi/3))
+                integrin_distance = np.sqrt(side_A**2 + side_B**2 - 2*side_A*side_B*np.cos(np.pi/3))
+                if integrin_distance <= radius:
+                    x_dot = integrin_distance*np.cos(theta) + x_position
+                    y_dot = integrin_distance*np.sin(theta) + y_position
+                    objs.append(ign.Integrin(self, x_dot, y_dot))
+                    create_integrin = True
+        
+        # find neighbors
+        for i in range(len(objs)):
+            for j in range(i+1, len(objs)):
+                if objs[i].get_distance(objs[j]) <= grid_length*1.1:
+                    objs[i].neighbors.append(objs[j])
+                    objs[j].neighbors.append(objs[i])
+                if len(objs[i].neighbors) >= 6:
+                    break;  
         return objs
 
     def get_integrin_by_id(self, id_):
