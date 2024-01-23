@@ -102,6 +102,7 @@ for cell in cells.members:
                 integrin_.x_position, integrin_.y_position, NEAR_DIST
             )
             integrin_._nearest = nearest_ligands
+
         integrin_._radar_radius = NEAR_DIST
         integrin_.calc_potential(integrin_._nearest,
                                 cell.normal_length,
@@ -165,27 +166,11 @@ while iter_simulation <= N_ITERATION:
         for integrin_ in cell.integrins:
             if integrin_.bound is False:
                 # create the equation of motion (EOM)
-                if integrin_.issurface and cells.many:
-                    # in this case the force acting on the integrin are:
-                    # 1. nearest another surface integrin
-                    # 2. neighboring integrin in the form of spring potential
-                    eom = lambda x, v: forces.total_force_1(
-                        x,
-                        v,
-                        integrin_._nearest,
-                        integrin_.neighbors,
-                        cell.normal_length,
-                        SPRING_CONSTANT,
-                        DAMPING_COEFFICIENT,
-                        VISCOSITY,
-                        EPSILON,
-                        integrin_.size,
-                        dim=2
-                    )
-                else:
-                    # if only one cell exist, every integrin attracted to nearest ligand
-                    # also if the integrin is not a surface it would be attracted to nearest ligand
-                    eom = lambda x, v: forces.total_force_2(
+                # in this case the force acting on the integrin are:
+                # 1. nearest another surface integrin / if there is no 
+                #    surface integrin, it will be ligand
+                # 2. neighboring integrin in the form of spring potential
+                eom = lambda x, v: forces.total_force(
                         x,
                         v,
                         integrin_._nearest,
@@ -223,7 +208,7 @@ while iter_simulation <= N_ITERATION:
                     surface_integrin, NEAR_DIST, integrin_.position
                 )
                 integrin_._nearest = nearest_surface_integrin            
-            elif integrin_.bound is False:
+            else:
                 nearest_ligands = substrate.nearest(
                     integrin_.x_position, integrin_.y_position, NEAR_DIST
                 )
