@@ -43,7 +43,9 @@ def show_all(
     forcearrow: bool = False,
     line: bool = False,
     showID: bool = False,
-    tracking: bool = False
+    tracking: bool = False,
+    trackID: int = 122,
+    showsurface: bool = False
 ):
     """Procedure to show all element of simulation including cells and
     nanopattern.
@@ -69,6 +71,10 @@ def show_all(
     forcearrow: default=False
         Whether the plot will include arrow which indicates the force
         vector or not
+    tracking: default=False
+        to perform tracking for specific object
+    showsurface: default=False
+        to highlight the surface integrin
     """
     # determine the folder's name
     if folder is None:
@@ -159,8 +165,12 @@ def show_all(
                     color="blue",
                     width=0.3,
                 )
+            if showsurface:
+                if integrin_.issurface:
+                    monitor = Circle(integrin_.position, integrin_.size, color="blue")
+                    axis.add_patch(monitor)
             if tracking:
-                if integrin_.id_ == 145:
+                if integrin_.id_ == trackID:
                     x_neighbor_pos = []
                     y_neighbor_pos = []
                     monitor = Circle(integrin_.position, integrin_.size, color="black")
@@ -168,9 +178,15 @@ def show_all(
                     for neighbor in integrin_._nearest:
                         x_neighbor_pos.append(neighbor.x_position)
                         y_neighbor_pos.append(neighbor.y_position)
+                    for neighbor in integrin_.neighbors:
+                        x_line = [integrin_.x_position, neighbor.x_position]
+                        y_line = [integrin_.y_position, neighbor.y_position]
+                        axis.plot(x_line, y_line, color="black", linewidth="1", alpha=0.5)
                     psc.circles(axis, x_neighbor_pos, y_neighbor_pos, integrin_.size, color="blue")
                     axis.add_patch(monitor)
                     axis.add_patch(radar)
+            
+
     axis.set_xlim(0, substrate.width)
     axis.set_ylim(0, substrate.height)
     axis.set_title(f"time = {number*timestep}", fontsize=22)
