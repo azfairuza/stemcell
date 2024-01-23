@@ -194,8 +194,8 @@ class Nanopattern:
         """
 
         # Find the smallest kernel size needed
-        kernel_size_x = int(2 * radius / self.x_gridsize) + 4
-        kernel_size_y = int(2 * radius / self.y_gridsize) + 4
+        kernel_size_x = int(2 * radius / self.x_gridsize) + 2
+        kernel_size_y = int(2 * radius / self.y_gridsize) + 2
         # make sure the kernel size is odd
         if kernel_size_x % 2 == 0:
             kernel_size_x += 1
