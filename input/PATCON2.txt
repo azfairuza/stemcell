@@ -4,8 +4,8 @@
 size 60 60
 ligandsize  0.25
 ligandmass 1
-gridnum 12 12 
-xdist 0.5 0.5 0.5 27 0.5 0.5 0.5
-ydist 0.5
+gridnum 12 12
+xdist 11 
+ydist 11
 
 #END

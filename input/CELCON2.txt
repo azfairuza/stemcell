@@ -6,5 +6,5 @@ resmass 1
 
 #CELL
 #x-pos      y-pos       radius      min_dist
-34        30          10          1.5
+30.25       30.25          10          1.5
 #END
